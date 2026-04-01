@@ -21,3 +21,6 @@ export {
 } from "./types.js";
 
 export type { Result, GamePort } from "./ports/index.js";
+export type { BotPort } from "./ports/index.js";
+export type { UIPort } from "./ports/index.js";
+export type { Action, StatePort } from "./ports/index.js";
