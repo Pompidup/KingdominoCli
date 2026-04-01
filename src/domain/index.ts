@@ -19,3 +19,5 @@ export {
   INITIAL_GAME_CONFIG,
   INITIAL_APP_STATE,
 } from "./types.js";
+
+export type { Result, GamePort } from "./ports/index.js";
