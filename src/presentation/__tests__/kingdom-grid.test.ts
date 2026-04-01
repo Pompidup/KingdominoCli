@@ -102,6 +102,24 @@ describe("renderKingdomGrid", () => {
     });
   });
 
+  describe("error flash", () => {
+    it("renders ghost with error highlight when errorFlash is true", () => {
+      const kingdom = createEmptyKingdom();
+      const lines = renderKingdomGrid({
+        kingdom,
+        cursorX: 3,
+        cursorY: 2,
+        cursorRotation: 0,
+        currentDomino: testDomino,
+        validPlacements: [{ position: { x: 3, y: 2 }, rotation: 0 }],
+        errorFlash: true,
+      });
+      // Ghost should still render the domino tiles
+      expect(lines[2].text).toContain(TERRAIN_SYMBOLS.wheat);
+      expect(lines[2].text).toContain(TERRAIN_SYMBOLS.forest);
+    });
+  });
+
   describe("with placed tiles", () => {
     it("renders placed tiles with terrain symbols", () => {
       const kingdom = createEmptyKingdom();

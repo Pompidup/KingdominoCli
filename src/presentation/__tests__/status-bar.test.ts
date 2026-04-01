@@ -50,5 +50,25 @@ describe("renderStatusBar", () => {
       const [line] = renderStatusBar({ phase: "pick", error: null });
       expect(line.text).toContain("Navigate");
     });
+
+    it("renders error with flash background when errorFlash is true", () => {
+      const [line] = renderStatusBar({
+        phase: "pick",
+        error: { message: "Flash error" },
+        errorFlash: true,
+      });
+      expect(line.style?.bg).toBe("#330000");
+      expect(line.style?.fg).toBe("#ff0000");
+      expect(line.style?.bold).toBe(true);
+    });
+
+    it("renders error without background when errorFlash is false", () => {
+      const [line] = renderStatusBar({
+        phase: "pick",
+        error: { message: "Normal error" },
+        errorFlash: false,
+      });
+      expect(line.style?.bg).toBeUndefined();
+    });
   });
 });

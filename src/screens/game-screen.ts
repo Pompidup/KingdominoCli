@@ -17,6 +17,7 @@ import {
 import type { BotPort } from "../domain/ports/bot-port.js";
 import type { GameEngine, RevealsDomino } from "@pompidup/kingdomino-engine";
 import { isGameWithNextAction } from "@pompidup/kingdomino-engine";
+import { mapErrorToFeedback } from "../application/error-feedback.js";
 
 export type GameScreenDeps = {
   statePort: StatePort;
@@ -50,6 +51,9 @@ export function createGameScreen(deps: GameScreenDeps) {
   const app = new App({ alternateScreen: true });
   let unsubscribe: (() => void) | null = null;
   let prevGameState: unknown = null;
+  let prevPlayerId: string | null = null;
+  let transitionTimeout: ReturnType<typeof setTimeout> | null = null;
+  let errorClearTimeout: ReturnType<typeof setTimeout> | null = null;
 
   function buildLayoutProps(): GameLayoutProps {
     const state = statePort.getState();
@@ -75,6 +79,8 @@ export function createGameScreen(deps: GameScreenDeps) {
       });
     }
 
+    const feedback = state.error ? mapErrorToFeedback(state.error.code, state.error.message) : null;
+
     return {
       turnInfo: {
         turn: state.gameState?.turn ?? 0,
@@ -91,11 +97,13 @@ export function createGameScreen(deps: GameScreenDeps) {
         cursorRotation: state.cursor.rotation,
         currentDomino: currentAction === "placeDomino" ? currentDomino : null,
         validPlacements: state.validPlacements,
+        errorFlash: feedback?.target === "cursor" && feedback.flash,
       },
       draftColumn: {
         dominoes: draftDominoes,
         selectedIndex: state.draftSelection,
         playerColors,
+        errorFlashIndex: feedback?.target === "draft" ? state.draftSelection : null,
       },
       miniKingdoms: otherPlayers.map((p) => ({
         kingdom: p.kingdom,
@@ -103,7 +111,13 @@ export function createGameScreen(deps: GameScreenDeps) {
       })),
       statusBar: {
         phase: actionToPhase(currentAction),
-        error: state.error ? { message: state.error.message } : null,
+        error: feedback && feedback.target !== "debugOnly" ? { message: feedback.message } : null,
+        errorFlash: feedback?.flash ?? false,
+      },
+      transition: {
+        active: state.transition.active,
+        playerName: state.transition.playerName,
+        playerColor: activeLord ? playerColors[activeLord.id] : undefined,
       },
       width: 80,
     };
@@ -131,7 +145,7 @@ export function createGameScreen(deps: GameScreenDeps) {
   // Pick phase: Up/Down to select, Enter to pick
   app.onKey("up", () => {
     const state = statePort.getState();
-    if (state.botPlaying) return;
+    if (state.botPlaying || state.transition.active) return;
     const action = getCurrentAction(state);
     if (action === "pickDomino") {
       const dominoes = getDraftDominoes(state);
@@ -144,7 +158,7 @@ export function createGameScreen(deps: GameScreenDeps) {
 
   app.onKey("down", () => {
     const state = statePort.getState();
-    if (state.botPlaying) return;
+    if (state.botPlaying || state.transition.active) return;
     const action = getCurrentAction(state);
     if (action === "pickDomino") {
       const dominoes = getDraftDominoes(state);
@@ -157,7 +171,7 @@ export function createGameScreen(deps: GameScreenDeps) {
 
   app.onKey("left", () => {
     const state = statePort.getState();
-    if (state.botPlaying) return;
+    if (state.botPlaying || state.transition.active) return;
     if (getCurrentAction(state) === "placeDomino") {
       statePort.dispatch({ type: "SET_CURSOR", cursor: { x: Math.max(0, state.cursor.x - 1) } });
     }
@@ -165,7 +179,7 @@ export function createGameScreen(deps: GameScreenDeps) {
 
   app.onKey("right", () => {
     const state = statePort.getState();
-    if (state.botPlaying) return;
+    if (state.botPlaying || state.transition.active) return;
     if (getCurrentAction(state) === "placeDomino") {
       statePort.dispatch({ type: "SET_CURSOR", cursor: { x: Math.min(8, state.cursor.x + 1) } });
     }
@@ -173,7 +187,7 @@ export function createGameScreen(deps: GameScreenDeps) {
 
   app.onKey("r", () => {
     const state = statePort.getState();
-    if (state.botPlaying) return;
+    if (state.botPlaying || state.transition.active) return;
     if (getCurrentAction(state) === "placeDomino") {
       const rotations = [0, 90, 180, 270] as const;
       const currentIdx = rotations.indexOf(state.cursor.rotation);
@@ -184,7 +198,7 @@ export function createGameScreen(deps: GameScreenDeps) {
 
   app.onKey("enter", () => {
     const state = statePort.getState();
-    if (state.botPlaying) return;
+    if (state.botPlaying || state.transition.active) return;
     const action = getCurrentAction(state);
     const gameState = state.gameState;
     if (!gameState || !isGameWithNextAction(gameState)) return;
@@ -231,7 +245,7 @@ export function createGameScreen(deps: GameScreenDeps) {
 
   app.onKey("d", () => {
     const state = statePort.getState();
-    if (state.botPlaying) return;
+    if (state.botPlaying || state.transition.active) return;
     const action = getCurrentAction(state);
     const gameState = state.gameState;
     if (!gameState || !isGameWithNextAction(gameState)) return;
@@ -305,10 +319,40 @@ export function createGameScreen(deps: GameScreenDeps) {
     }
   }
 
+  function handlePlayerTransition() {
+    const state = statePort.getState();
+    const activePlayer = getActivePlayer(state);
+    const currentPlayerId = activePlayer?.id ?? null;
+
+    if (
+      currentPlayerId &&
+      currentPlayerId !== prevPlayerId &&
+      prevPlayerId !== null &&
+      !state.botPlaying
+    ) {
+      if (transitionTimeout) clearTimeout(transitionTimeout);
+      statePort.dispatch({
+        type: "SET_TRANSITION",
+        transition: { active: true, playerName: activePlayer?.name ?? "" },
+      });
+      transitionTimeout = setTimeout(() => {
+        statePort.dispatch({
+          type: "SET_TRANSITION",
+          transition: { active: false, playerName: "" },
+        });
+        transitionTimeout = null;
+      }, 800);
+    }
+
+    prevPlayerId = currentPlayerId;
+  }
+
   function handlePhaseTransition() {
     const state = statePort.getState();
     if (state.gameState === prevGameState) return;
     prevGameState = state.gameState;
+
+    handlePlayerTransition();
 
     const action = getCurrentAction(state);
     if (action === "pickDomino") {
@@ -328,12 +372,24 @@ export function createGameScreen(deps: GameScreenDeps) {
     }
   }
 
+  function handleErrorAutoClear() {
+    const state = statePort.getState();
+    if (state.error) {
+      if (errorClearTimeout) clearTimeout(errorClearTimeout);
+      errorClearTimeout = setTimeout(() => {
+        statePort.dispatch({ type: "CLEAR_ERROR" });
+        errorClearTimeout = null;
+      }, 1500);
+    }
+  }
+
   function start() {
     rerender();
     checkAndRunBots();
     unsubscribe = statePort.subscribe(() => {
       rerender();
       handlePhaseTransition();
+      handleErrorAutoClear();
       // Check for game end
       const state = statePort.getState();
       if (state.gameState && !isGameWithNextAction(state.gameState)) {
@@ -348,6 +404,14 @@ export function createGameScreen(deps: GameScreenDeps) {
   }
 
   function stop() {
+    if (transitionTimeout) {
+      clearTimeout(transitionTimeout);
+      transitionTimeout = null;
+    }
+    if (errorClearTimeout) {
+      clearTimeout(errorClearTimeout);
+      errorClearTimeout = null;
+    }
     if (unsubscribe) {
       unsubscribe();
       unsubscribe = null;

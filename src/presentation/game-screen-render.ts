@@ -7,6 +7,13 @@ import { renderTurnInfo } from "./turn-info.js";
 import { renderKingdomGrid } from "./kingdom-grid.js";
 import { renderDraftColumn } from "./draft-column.js";
 import { renderStatusBar } from "./status-bar.js";
+import { renderTransitionOverlay } from "./transition-overlay.js";
+
+export type TransitionProps = {
+  active: boolean;
+  playerName: string;
+  playerColor?: string;
+};
 
 export type GameLayoutProps = {
   turnInfo: TurnInfoProps;
@@ -14,7 +21,9 @@ export type GameLayoutProps = {
   draftColumn: DraftColumnProps;
   miniKingdoms: KingdomGridProps[];
   statusBar: StatusBarProps;
+  transition?: TransitionProps;
   width: number;
+  height?: number;
 };
 
 function padRight(text: string, width: number): string {
@@ -43,7 +52,25 @@ function mergeSideBySide(
 }
 
 export function renderGameLayout(props: GameLayoutProps): RenderLine[] {
-  const { turnInfo, kingdomGrid, draftColumn, miniKingdoms, statusBar, width } = props;
+  const {
+    turnInfo,
+    kingdomGrid,
+    draftColumn,
+    miniKingdoms,
+    statusBar,
+    transition,
+    width,
+    height = 24,
+  } = props;
+
+  if (transition?.active) {
+    return renderTransitionOverlay({
+      playerName: transition.playerName,
+      playerColor: transition.playerColor,
+      width,
+      height,
+    });
+  }
   const lines: RenderLine[] = [];
 
   // Turn info (top bar)

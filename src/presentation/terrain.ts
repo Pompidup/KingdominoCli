@@ -47,7 +47,7 @@ export function formatCrowns(crowns: number, ascii = false): string {
 
 export type RenderTileOptions = {
   compact?: boolean;
-  highlight?: "valid" | "invalid" | null;
+  highlight?: "valid" | "invalid" | "error" | null;
   ascii?: boolean;
 };
 
@@ -70,6 +70,9 @@ export function renderTile(tile: Tile | EmptyTile, options: RenderTileOptions = 
     style.bg = "#00aa00";
   } else if (highlight === "invalid") {
     style.bg = "#aa0000";
+  } else if (highlight === "error") {
+    style.bg = "#cc0000";
+    style.bold = true;
   }
 
   return { text, style };

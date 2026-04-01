@@ -10,6 +10,7 @@ export type KingdomGridProps = {
   cursorRotation?: Rotation;
   currentDomino?: Domino | null;
   validPlacements?: ValidPlacement[];
+  errorFlash?: boolean;
   compact?: boolean;
   ascii?: boolean;
 };
@@ -46,6 +47,7 @@ export function renderKingdomGrid(props: KingdomGridProps): RenderLine[] {
     cursorRotation = 0,
     currentDomino = null,
     validPlacements = [],
+    errorFlash = false,
     compact = false,
     ascii = false,
   } = props;
@@ -67,17 +69,22 @@ export function renderKingdomGrid(props: KingdomGridProps): RenderLine[] {
     let lineText = "";
     for (let col = 0; col < size; col++) {
       const tile = kingdom[row][col] as Tile | EmptyTile;
-      let highlight: "valid" | "invalid" | null = null;
+      let highlight: "valid" | "invalid" | "error" | null = null;
 
       const isGhostFirst = ghostFirst?.x === col && ghostFirst?.y === row;
       const isGhostSecond = ghostSecond?.x === col && ghostSecond?.y === row;
+
+      function getGhostHighlight(): "valid" | "invalid" | "error" {
+        if (errorFlash) return "error";
+        return ghostValid ? "valid" : "invalid";
+      }
 
       if (isGhostFirst && currentDomino) {
         const ghostTile = currentDomino.left;
         const rendered = renderTile(ghostTile, {
           compact,
           ascii,
-          highlight: ghostValid ? "valid" : "invalid",
+          highlight: getGhostHighlight(),
         });
         lineText += rendered.text;
         continue;
@@ -88,7 +95,7 @@ export function renderKingdomGrid(props: KingdomGridProps): RenderLine[] {
         const rendered = renderTile(ghostTile, {
           compact,
           ascii,
-          highlight: ghostValid ? "valid" : "invalid",
+          highlight: getGhostHighlight(),
         });
         lineText += rendered.text;
         continue;

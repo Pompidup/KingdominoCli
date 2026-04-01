@@ -70,4 +70,11 @@ describe("renderDraftColumn", () => {
     const lines = renderDraftColumn({ dominoes: [], selectedIndex: 0 });
     expect(lines).toHaveLength(0);
   });
+
+  it("applies error flash style to specified index", () => {
+    const lines = renderDraftColumn({ dominoes, selectedIndex: 0, errorFlashIndex: 1 });
+    expect(lines[1].style?.bg).toBe("#660000");
+    expect(lines[1].style?.fg).toBe("#ff0000");
+    expect(lines[0].style?.bg).toBeUndefined();
+  });
 });

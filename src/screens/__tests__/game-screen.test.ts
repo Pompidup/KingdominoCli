@@ -482,6 +482,200 @@ describe("createGameScreen", () => {
     vi.useRealTimers();
   });
 
+  it("ignores input when transition is active", () => {
+    const state: AppState = {
+      ...INITIAL_APP_STATE,
+      transition: { active: true, playerName: "Alice" },
+    };
+    const statePort = createMockStatePort(state);
+
+    createGameScreen(createDefaultDeps({ statePort }));
+
+    simulateKey("up");
+    simulateKey("enter");
+    expect(statePort.dispatch).not.toHaveBeenCalled();
+  });
+
+  it("auto-clears error after 1500ms", () => {
+    vi.useFakeTimers();
+
+    const state: AppState = {
+      ...INITIAL_APP_STATE,
+      error: { code: "TEST", message: "test error", timestamp: Date.now() },
+    };
+    const statePort = createMockStatePort(state);
+    let subscribeCallback: ((state: AppState) => void) | null = null;
+    vi.mocked(statePort.subscribe).mockImplementation((listener) => {
+      subscribeCallback = listener;
+      return () => {};
+    });
+
+    const screen = createGameScreen(createDefaultDeps({ statePort }));
+    screen.start();
+
+    // Trigger subscriber
+    subscribeCallback!(state);
+
+    // Not cleared yet
+    expect(statePort.dispatch).not.toHaveBeenCalledWith({ type: "CLEAR_ERROR" });
+
+    // After 1500ms
+    vi.advanceTimersByTime(1500);
+    expect(statePort.dispatch).toHaveBeenCalledWith({ type: "CLEAR_ERROR" });
+
+    vi.useRealTimers();
+  });
+
+  it("resets error clear timer on new error", () => {
+    vi.useFakeTimers();
+
+    const state: AppState = {
+      ...INITIAL_APP_STATE,
+      error: { code: "TEST", message: "first error", timestamp: Date.now() },
+    };
+    const statePort = createMockStatePort(state);
+    let subscribeCallback: ((state: AppState) => void) | null = null;
+    vi.mocked(statePort.subscribe).mockImplementation((listener) => {
+      subscribeCallback = listener;
+      return () => {};
+    });
+
+    const screen = createGameScreen(createDefaultDeps({ statePort }));
+    screen.start();
+
+    // First error triggers timer
+    subscribeCallback!(state);
+    vi.advanceTimersByTime(1000);
+
+    // New error resets timer
+    const state2 = {
+      ...state,
+      error: { code: "TEST2", message: "second error", timestamp: Date.now() + 1000 },
+    };
+    vi.mocked(statePort.getState).mockReturnValue(state2);
+    subscribeCallback!(state2);
+
+    // Original 1500ms passed but timer was reset
+    vi.advanceTimersByTime(500);
+    expect(statePort.dispatch).not.toHaveBeenCalledWith({ type: "CLEAR_ERROR" });
+
+    // Full 1500ms from reset
+    vi.advanceTimersByTime(1000);
+    expect(statePort.dispatch).toHaveBeenCalledWith({ type: "CLEAR_ERROR" });
+
+    vi.useRealTimers();
+  });
+
+  it("dispatches transition on player change", () => {
+    vi.useFakeTimers();
+
+    const fakeGame1 = {
+      id: "g1",
+      players: [
+        { id: "p1", name: "Alice", kingdom: [] },
+        { id: "p2", name: "Bob", kingdom: [] },
+      ],
+      lords: [
+        { id: "l1", playerId: "p1" },
+        { id: "l2", playerId: "p2" },
+      ],
+      currentDominoes: [],
+      nextAction: { type: "action", nextLord: "l1", nextAction: "pickDomino" },
+    } as unknown as GameWithNextAction;
+
+    const fakeGame2 = {
+      ...fakeGame1,
+      nextAction: { type: "action", nextLord: "l2", nextAction: "pickDomino" },
+    } as unknown as GameWithNextAction;
+
+    const state1: AppState = {
+      ...INITIAL_APP_STATE,
+      screen: "game",
+      gameState: fakeGame1,
+    };
+
+    const statePort = createMockStatePort(state1);
+    let subscribeCallback: ((state: AppState) => void) | null = null;
+    vi.mocked(statePort.subscribe).mockImplementation((listener) => {
+      subscribeCallback = listener;
+      return () => {};
+    });
+
+    const screen = createGameScreen(createDefaultDeps({ statePort }));
+    screen.start();
+
+    // First subscribe call sets prevPlayerId
+    subscribeCallback!(state1);
+
+    // Change to player 2
+    const state2 = { ...state1, gameState: fakeGame2 };
+    vi.mocked(statePort.getState).mockReturnValue(state2);
+    subscribeCallback!(state2);
+
+    expect(statePort.dispatch).toHaveBeenCalledWith({
+      type: "SET_TRANSITION",
+      transition: { active: true, playerName: "Bob" },
+    });
+
+    // After 800ms, transition should be cleared
+    vi.advanceTimersByTime(800);
+    expect(statePort.dispatch).toHaveBeenCalledWith({
+      type: "SET_TRANSITION",
+      transition: { active: false, playerName: "" },
+    });
+
+    vi.useRealTimers();
+  });
+
+  it("does not dispatch transition during bot turns", () => {
+    const fakeGame1 = {
+      id: "g1",
+      players: [
+        { id: "p1", name: "Alice", kingdom: [] },
+        { id: "p2", name: "Bot", kingdom: [] },
+      ],
+      lords: [
+        { id: "l1", playerId: "p1" },
+        { id: "l2", playerId: "p2" },
+      ],
+      currentDominoes: [],
+      nextAction: { type: "action", nextLord: "l1", nextAction: "pickDomino" },
+    } as unknown as GameWithNextAction;
+
+    const fakeGame2 = {
+      ...fakeGame1,
+      nextAction: { type: "action", nextLord: "l2", nextAction: "pickDomino" },
+    } as unknown as GameWithNextAction;
+
+    const state1: AppState = {
+      ...INITIAL_APP_STATE,
+      screen: "game",
+      gameState: fakeGame1,
+    };
+
+    const statePort = createMockStatePort(state1);
+    let subscribeCallback: ((state: AppState) => void) | null = null;
+    vi.mocked(statePort.subscribe).mockImplementation((listener) => {
+      subscribeCallback = listener;
+      return () => {};
+    });
+
+    const screen = createGameScreen(createDefaultDeps({ statePort }));
+    screen.start();
+
+    // First call sets prevPlayerId
+    subscribeCallback!(state1);
+
+    // Change to player 2 but botPlaying is true
+    const state2 = { ...state1, gameState: fakeGame2, botPlaying: true };
+    vi.mocked(statePort.getState).mockReturnValue(state2);
+    subscribeCallback!(state2);
+
+    expect(statePort.dispatch).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: "SET_TRANSITION" }),
+    );
+  });
+
   it("calls checkAndRunBots on start if first turn is bot", async () => {
     vi.useFakeTimers();
 

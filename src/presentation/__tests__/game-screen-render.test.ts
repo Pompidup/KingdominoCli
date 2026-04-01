@@ -87,4 +87,28 @@ describe("renderGameLayout", () => {
     const lastLine = lines[lines.length - 1];
     expect(lastLine.text).toContain("Move");
   });
+
+  it("renders transition overlay when transition is active", () => {
+    const props: GameLayoutProps = {
+      ...baseProps,
+      transition: { active: true, playerName: "Bob", playerColor: "#ff6b6b" },
+      height: 20,
+    };
+    const lines = renderGameLayout(props);
+    expect(lines).toHaveLength(20);
+    const allText = lines.map((l) => l.text).join("\n");
+    expect(allText).toContain("Bob");
+    // Should NOT contain normal layout content
+    expect(allText).not.toContain("Turn 1");
+    expect(allText).not.toContain("Navigate");
+  });
+
+  it("renders normal layout when transition is inactive", () => {
+    const props: GameLayoutProps = {
+      ...baseProps,
+      transition: { active: false, playerName: "" },
+    };
+    const lines = renderGameLayout(props);
+    expect(lines[0].text).toContain("Alice");
+  });
 });

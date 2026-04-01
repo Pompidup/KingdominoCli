@@ -21,3 +21,6 @@ export type { TurnInfoProps } from "./turn-info.js";
 
 export { renderStatusBar } from "./status-bar.js";
 export type { StatusBarProps, StatusBarPhase } from "./status-bar.js";
+
+export { renderTransitionOverlay } from "./transition-overlay.js";
+export type { TransitionOverlayProps } from "./transition-overlay.js";
