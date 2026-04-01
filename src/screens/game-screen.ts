@@ -54,6 +54,8 @@ export function createGameScreen(deps: GameScreenDeps) {
   let prevPlayerId: string | null = null;
   let transitionTimeout: ReturnType<typeof setTimeout> | null = null;
   let errorClearTimeout: ReturnType<typeof setTimeout> | null = null;
+  let placementFlash: "placed" | "discarded" | null = null;
+  let placementFlashTimeout: ReturnType<typeof setTimeout> | null = null;
 
   function buildLayoutProps(): GameLayoutProps {
     const state = statePort.getState();
@@ -111,8 +113,16 @@ export function createGameScreen(deps: GameScreenDeps) {
       })),
       statusBar: {
         phase: actionToPhase(currentAction),
-        error: feedback && feedback.target !== "debugOnly" ? { message: feedback.message } : null,
-        errorFlash: feedback?.flash ?? false,
+        error:
+          placementFlash === "placed"
+            ? { message: "Domino placed!" }
+            : placementFlash === "discarded"
+              ? { message: "Domino discarded" }
+              : feedback && feedback.target !== "debugOnly"
+                ? { message: feedback.message }
+                : null,
+        errorFlash: placementFlash === "discarded" || (feedback?.flash ?? false),
+        successFlash: placementFlash === "placed",
       },
       transition: {
         active: state.transition.active,
@@ -136,6 +146,17 @@ export function createGameScreen(deps: GameScreenDeps) {
   });
 
   app.add(screenComponent);
+
+  function triggerPlacementFlash(type: "placed" | "discarded") {
+    if (placementFlashTimeout) clearTimeout(placementFlashTimeout);
+    placementFlash = type;
+    rerender();
+    placementFlashTimeout = setTimeout(() => {
+      placementFlash = null;
+      placementFlashTimeout = null;
+      rerender();
+    }, 300);
+  }
 
   function rerender() {
     const layoutProps = buildLayoutProps();
@@ -232,6 +253,7 @@ export function createGameScreen(deps: GameScreenDeps) {
         state.cursor.rotation,
       );
       if (result.ok) {
+        triggerPlacementFlash("placed");
         statePort.dispatch({ type: "SET_GAME_STATE", gameState: result.value });
         checkAndRunBots();
       } else {
@@ -268,6 +290,7 @@ export function createGameScreen(deps: GameScreenDeps) {
       }
       const result = gamePort.discardDomino(gameState, lordId);
       if (result.ok) {
+        triggerPlacementFlash("discarded");
         statePort.dispatch({ type: "SET_GAME_STATE", gameState: result.value });
         checkAndRunBots();
       }
@@ -411,6 +434,10 @@ export function createGameScreen(deps: GameScreenDeps) {
     if (errorClearTimeout) {
       clearTimeout(errorClearTimeout);
       errorClearTimeout = null;
+    }
+    if (placementFlashTimeout) {
+      clearTimeout(placementFlashTimeout);
+      placementFlashTimeout = null;
     }
     if (unsubscribe) {
       unsubscribe();

@@ -6,6 +6,7 @@ export type StatusBarProps = {
   phase: StatusBarPhase;
   error?: { message: string } | null;
   errorFlash?: boolean;
+  successFlash?: boolean;
 };
 
 const PHASE_SHORTCUTS: Record<StatusBarPhase, string> = {
@@ -15,9 +16,12 @@ const PHASE_SHORTCUTS: Record<StatusBarPhase, string> = {
 };
 
 export function renderStatusBar(props: StatusBarProps): RenderLine[] {
-  const { phase, error, errorFlash = false } = props;
+  const { phase, error, errorFlash = false, successFlash = false } = props;
 
   if (error) {
+    if (successFlash) {
+      return [{ text: `✓ ${error.message}`, style: { fg: "#00ff00", bg: "#003300", bold: true } }];
+    }
     const style = errorFlash
       ? { fg: "#ff0000", bg: "#330000", bold: true }
       : { fg: "#ff0000", bold: true };

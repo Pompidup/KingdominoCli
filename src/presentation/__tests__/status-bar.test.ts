@@ -71,4 +71,27 @@ describe("renderStatusBar", () => {
       expect(line.style?.bg).toBeUndefined();
     });
   });
+
+  describe("success flash", () => {
+    it("renders success message in green with background when successFlash is true", () => {
+      const [line] = renderStatusBar({
+        phase: "place",
+        error: { message: "Domino placed!" },
+        successFlash: true,
+      });
+      expect(line.text).toContain("✓ Domino placed!");
+      expect(line.style?.fg).toBe("#00ff00");
+      expect(line.style?.bg).toBe("#003300");
+      expect(line.style?.bold).toBe(true);
+    });
+
+    it("does not show success style when successFlash is false", () => {
+      const [line] = renderStatusBar({
+        phase: "place",
+        error: { message: "Domino placed!" },
+        successFlash: false,
+      });
+      expect(line.style?.fg).toBe("#ff0000");
+    });
+  });
 });

@@ -17,13 +17,24 @@
     "format:check": "prettier --check 'src/**/*.ts'",
     "test": "vitest run --passWithNoTests"
   },
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "kingdomino",
     "cli",
-    "game"
+    "game",
+    "board-game",
+    "terminal",
+    "tui"
   ],
   "author": "Pompidup",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Pompidup/KingdominoCli"
+  },
+  "homepage": "https://github.com/Pompidup/KingdominoCli#readme",
   "packageManager": "pnpm@10.30.3",
   "devDependencies": {
     "@eslint/js": "^10.0.1",

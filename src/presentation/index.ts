@@ -24,3 +24,6 @@ export type { StatusBarProps, StatusBarPhase } from "./status-bar.js";
 
 export { renderTransitionOverlay } from "./transition-overlay.js";
 export type { TransitionOverlayProps } from "./transition-overlay.js";
+
+export { renderResultsScreen } from "./results-screen-render.js";
+export type { ResultsScreenProps } from "./results-screen-render.js";
