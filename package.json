@@ -20,7 +20,6 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true,
     "registry": "https://registry.npmjs.org"
   },
   "files": [
@@ -38,7 +37,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Pompidup/KingdominoCli"
+    "url": "git+https://github.com/Pompidup/KingdominoCli.git"
   },
   "homepage": "https://github.com/Pompidup/KingdominoCli#readme",
   "packageManager": "pnpm@10.30.3",
