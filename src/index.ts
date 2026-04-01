@@ -75,6 +75,7 @@ function startGame(config: GameConfig) {
   if (!result.ok) {
     console.error(`Failed to start game: ${result.error.message}`);
     process.exit(1);
+    return;
   }
 
   stateManager.dispatch({ type: "SET_GAME_STATE", gameState: result.value });

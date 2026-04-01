@@ -344,7 +344,7 @@ describe("createGameScreen", () => {
     };
     const statePort = createMockStatePort(state);
     const gamePort = createMockGamePort();
-    const fakePlacements = [{ position: { x: 3, y: 4 }, rotation: 0 }];
+    const fakePlacements = [{ position: { x: 3, y: 4 }, rotation: 0 as const }];
     vi.mocked(gamePort.getValidPlacements).mockReturnValue(fakePlacements);
 
     let subscribeCallback: ((state: AppState) => void) | null = null;
