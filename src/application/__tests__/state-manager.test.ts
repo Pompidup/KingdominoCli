@@ -71,7 +71,10 @@ describe("StateManager", () => {
   describe("SET_TRANSITION", () => {
     it("sets transition state", () => {
       const manager = new StateManager();
-      manager.dispatch({ type: "SET_TRANSITION", transition: { active: true, playerName: "Alice" } });
+      manager.dispatch({
+        type: "SET_TRANSITION",
+        transition: { active: true, playerName: "Alice" },
+      });
       expect(manager.getState().transition).toEqual({ active: true, playerName: "Alice" });
     });
   });
@@ -126,9 +129,7 @@ describe("StateManager", () => {
       manager.dispatch({ type: "NAVIGATE", screen: "config" });
 
       expect(listener).toHaveBeenCalledTimes(1);
-      expect(listener).toHaveBeenCalledWith(
-        expect.objectContaining({ screen: "config" }),
-      );
+      expect(listener).toHaveBeenCalledWith(expect.objectContaining({ screen: "config" }));
     });
 
     it("supports multiple listeners", () => {

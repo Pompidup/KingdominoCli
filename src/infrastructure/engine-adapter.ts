@@ -60,11 +60,7 @@ export class EngineAdapter implements GamePort {
     return wrapResult(() => this.engine.startGame({ game }));
   }
 
-  chooseDomino(
-    game: GameState,
-    dominoPick: number,
-    lordId: string,
-  ): Result<GameWithNextAction> {
+  chooseDomino(game: GameState, dominoPick: number, lordId: string): Result<GameWithNextAction> {
     return wrapResult(() => this.engine.chooseDomino({ game, dominoPick, lordId }));
   }
 
@@ -81,11 +77,7 @@ export class EngineAdapter implements GamePort {
     return wrapResult(() => this.engine.discardDomino({ game, lordId }));
   }
 
-  getValidPlacements(
-    kingdom: Kingdom,
-    domino: Domino,
-    maxKingdomSize?: number,
-  ): ValidPlacement[] {
+  getValidPlacements(kingdom: Kingdom, domino: Domino, maxKingdomSize?: number): ValidPlacement[] {
     return this.engine.getValidPlacements({ kingdom, domino, maxKingdomSize });
   }
 

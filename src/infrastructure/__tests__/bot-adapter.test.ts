@@ -25,7 +25,9 @@ const fakeEngine = {} as GameEngine;
 const fakeGame = {
   id: "game-1",
   players: [{ id: "player-1", name: "Bot", kingdom: [], bot: { strategyName: "greedy" } }],
-  lords: [{ id: "lord-1", playerId: "player-1", turnEnded: false, hasPick: false, hasPlace: false }],
+  lords: [
+    { id: "lord-1", playerId: "player-1", turnEnded: false, hasPick: false, hasPlace: false },
+  ],
   nextAction: { type: "action", nextLord: "lord-1", nextAction: "pickDomino" },
 } as unknown as GameWithNextAction;
 

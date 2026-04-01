@@ -14,7 +14,9 @@ import type {
   Rotation,
 } from "@pompidup/kingdomino-engine";
 
-export type Result<T> = { ok: true; value: T } | { ok: false; error: { code: string; message: string } };
+export type Result<T> =
+  | { ok: true; value: T }
+  | { ok: false; error: { code: string; message: string } };
 
 export interface GamePort {
   getModes(): GameMode[];

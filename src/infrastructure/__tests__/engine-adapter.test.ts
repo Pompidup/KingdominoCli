@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { GameEngine, GameState, GameWithNextStep, GameWithNextAction } from "@pompidup/kingdomino-engine";
+import type {
+  GameEngine,
+  GameState,
+  GameWithNextStep,
+  GameWithNextAction,
+} from "@pompidup/kingdomino-engine";
 import { EngineAdapter } from "../engine-adapter.js";
 
 function createMockEngine(): GameEngine {
@@ -24,8 +29,14 @@ function createMockEngine(): GameEngine {
 }
 
 const fakeGame = { id: "game-1" } as unknown as GameState;
-const fakeGameStep = { id: "game-1", nextAction: { type: "step", step: "addPlayers" } } as unknown as GameWithNextStep;
-const fakeGameAction = { id: "game-1", nextAction: { type: "action", nextLord: "lord-1", nextAction: "pickDomino" } } as unknown as GameWithNextAction;
+const fakeGameStep = {
+  id: "game-1",
+  nextAction: { type: "step", step: "addPlayers" },
+} as unknown as GameWithNextStep;
+const fakeGameAction = {
+  id: "game-1",
+  nextAction: { type: "action", nextLord: "lord-1", nextAction: "pickDomino" },
+} as unknown as GameWithNextAction;
 
 describe("EngineAdapter", () => {
   let engine: GameEngine;
@@ -67,7 +78,9 @@ describe("EngineAdapter", () => {
 
     it("returns error result on DomainException", () => {
       const error = Object.assign(new Error("Mode not found"), { code: "MODE_NOT_FOUND" });
-      vi.mocked(engine.createGame).mockImplementation(() => { throw error; });
+      vi.mocked(engine.createGame).mockImplementation(() => {
+        throw error;
+      });
 
       const result = adapter.createGame("Invalid");
 
@@ -78,7 +91,9 @@ describe("EngineAdapter", () => {
     });
 
     it("returns UNKNOWN_ERROR for non-domain errors", () => {
-      vi.mocked(engine.createGame).mockImplementation(() => { throw new Error("unexpected"); });
+      vi.mocked(engine.createGame).mockImplementation(() => {
+        throw new Error("unexpected");
+      });
 
       const result = adapter.createGame("Classic");
 
@@ -96,12 +111,17 @@ describe("EngineAdapter", () => {
       const result = adapter.addPlayers(fakeGame, ["Alice", "Bobby"]);
 
       expect(result).toEqual({ ok: true, value: fakeGameStep });
-      expect(engine.addPlayers).toHaveBeenCalledWith({ game: fakeGame, players: ["Alice", "Bobby"] });
+      expect(engine.addPlayers).toHaveBeenCalledWith({
+        game: fakeGame,
+        players: ["Alice", "Bobby"],
+      });
     });
 
     it("returns error on failure", () => {
       const error = Object.assign(new Error("Too few players"), { code: "INVALID_PLAYER_COUNT" });
-      vi.mocked(engine.addPlayers).mockImplementation(() => { throw error; });
+      vi.mocked(engine.addPlayers).mockImplementation(() => {
+        throw error;
+      });
 
       const result = adapter.addPlayers(fakeGame, ["Al"]);
 
@@ -166,7 +186,11 @@ describe("EngineAdapter", () => {
       vi.mocked(engine.getValidPlacements).mockReturnValue(placements);
 
       const kingdom = [] as unknown as Parameters<typeof adapter.getValidPlacements>[0];
-      const domino = { left: { type: "wheat", crowns: 0 }, right: { type: "forest", crowns: 1 }, number: 1 } as const;
+      const domino = {
+        left: { type: "wheat", crowns: 0 },
+        right: { type: "forest", crowns: 1 },
+        number: 1,
+      } as const;
 
       expect(adapter.getValidPlacements(kingdom, domino)).toEqual(placements);
     });
@@ -177,7 +201,11 @@ describe("EngineAdapter", () => {
       vi.mocked(engine.canPlaceDomino).mockReturnValue(true);
 
       const kingdom = [] as unknown as Parameters<typeof adapter.canPlaceDomino>[0];
-      const domino = { left: { type: "wheat", crowns: 0 }, right: { type: "forest", crowns: 1 }, number: 1 } as const;
+      const domino = {
+        left: { type: "wheat", crowns: 0 },
+        right: { type: "forest", crowns: 1 },
+        number: 1,
+      } as const;
 
       expect(adapter.canPlaceDomino(kingdom, domino)).toBe(true);
     });
@@ -196,7 +224,9 @@ describe("EngineAdapter", () => {
 
   describe("getResults", () => {
     it("returns ok result on success", () => {
-      const results = { ...fakeGame, result: [] } as unknown as ReturnType<GameEngine["getResults"]>;
+      const results = { ...fakeGame, result: [] } as unknown as ReturnType<
+        GameEngine["getResults"]
+      >;
       vi.mocked(engine.getResults).mockReturnValue(results);
 
       const result = adapter.getResults(fakeGame);

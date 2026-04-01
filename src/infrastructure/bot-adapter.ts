@@ -17,7 +17,10 @@ export class BotAdapter implements BotPort {
       const strategyName = player?.bot?.strategyName ?? "random";
       const strategy = getStrategy(strategyName);
       if (!strategy) {
-        return { ok: false, error: { code: "UNKNOWN_STRATEGY", message: `Unknown strategy: ${strategyName}` } };
+        return {
+          ok: false,
+          error: { code: "UNKNOWN_STRATEGY", message: `Unknown strategy: ${strategyName}` },
+        };
       }
       const newState = enginePlayBotTurn(engine, game, strategy);
       return { ok: true, value: newState };
