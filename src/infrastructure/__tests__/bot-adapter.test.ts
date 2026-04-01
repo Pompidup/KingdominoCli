@@ -9,7 +9,6 @@ vi.mock("@pompidup/kingdomino-engine", async (importOriginal) => {
     playBotTurn: vi.fn(),
     isBotTurn: vi.fn(),
     getStrategyNames: vi.fn(),
-    getStrategy: vi.fn(),
   };
 });
 
@@ -17,7 +16,6 @@ import {
   playBotTurn as mockPlayBotTurn,
   isBotTurn as mockIsBotTurn,
   getStrategyNames as mockGetStrategyNames,
-  getStrategy as mockGetStrategy,
 } from "@pompidup/kingdomino-engine";
 
 const fakeEngine = {} as GameEngine;
@@ -38,20 +36,27 @@ describe("BotAdapter", () => {
 
   describe("playBotTurn", () => {
     it("returns ok result on success", () => {
-      const fakeStrategy = { chooseDomino: vi.fn(), choosePlacement: vi.fn() };
-      vi.mocked(mockGetStrategy).mockReturnValue(fakeStrategy);
       vi.mocked(mockPlayBotTurn).mockReturnValue(fakeResult);
 
       const result = adapter.playBotTurn(fakeEngine, fakeGame);
 
       expect(result).toEqual({ ok: true, value: fakeResult });
-      expect(mockGetStrategy).toHaveBeenCalledWith("greedy");
+      expect(mockPlayBotTurn).toHaveBeenCalledWith(
+        fakeEngine,
+        fakeGame,
+        expect.objectContaining({}),
+      );
     });
 
     it("returns error if strategy not found", () => {
-      vi.mocked(mockGetStrategy).mockReturnValue(undefined);
+      const unknownStrategyGame = {
+        ...fakeGame,
+        players: [
+          { id: "player-1", name: "Bot", kingdom: [], bot: { strategyName: "nonexistent" } },
+        ],
+      } as unknown as GameWithNextAction;
 
-      const result = adapter.playBotTurn(fakeEngine, fakeGame);
+      const result = adapter.playBotTurn(fakeEngine, unknownStrategyGame);
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -60,8 +65,6 @@ describe("BotAdapter", () => {
     });
 
     it("returns error on exception", () => {
-      const fakeStrategy = { chooseDomino: vi.fn(), choosePlacement: vi.fn() };
-      vi.mocked(mockGetStrategy).mockReturnValue(fakeStrategy);
       vi.mocked(mockPlayBotTurn).mockImplementation(() => {
         throw new Error("bot failed");
       });
@@ -79,13 +82,12 @@ describe("BotAdapter", () => {
         ...fakeGame,
         players: [{ id: "player-1", name: "Human", kingdom: [] }],
       } as unknown as GameWithNextAction;
-      const fakeStrategy = { chooseDomino: vi.fn(), choosePlacement: vi.fn() };
-      vi.mocked(mockGetStrategy).mockReturnValue(fakeStrategy);
       vi.mocked(mockPlayBotTurn).mockReturnValue(fakeResult);
 
-      adapter.playBotTurn(fakeEngine, humanGame);
+      const result = adapter.playBotTurn(fakeEngine, humanGame);
 
-      expect(mockGetStrategy).toHaveBeenCalledWith("random");
+      expect(result.ok).toBe(true);
+      expect(mockPlayBotTurn).toHaveBeenCalled();
     });
   });
 

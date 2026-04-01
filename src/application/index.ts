@@ -8,3 +8,5 @@ export {
   getKingdomForDisplay,
   getScores,
 } from "./selectors.js";
+export { orchestrateGameSetup } from "./game-orchestrator.js";
+export type { OrchestratorDeps } from "./game-orchestrator.js";

@@ -47,6 +47,12 @@ describe("EngineAdapter", () => {
     adapter = new EngineAdapter(engine);
   });
 
+  describe("getEngine", () => {
+    it("returns the underlying engine instance", () => {
+      expect(adapter.getEngine()).toBe(engine);
+    });
+  });
+
   describe("getModes", () => {
     it("delegates to engine and returns modes", () => {
       const modes = [{ name: "Classic", description: "Classic mode" }];

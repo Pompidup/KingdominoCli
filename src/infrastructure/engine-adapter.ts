@@ -36,6 +36,10 @@ function wrapResult<T>(fn: () => T): Result<T> {
 export class EngineAdapter implements GamePort {
   constructor(private readonly engine: GameEngine) {}
 
+  getEngine(): GameEngine {
+    return this.engine;
+  }
+
   getModes(): GameMode[] {
     return this.engine.getModes({});
   }

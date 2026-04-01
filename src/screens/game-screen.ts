@@ -1,4 +1,5 @@
 import { App, createComponent } from "@pompidup/cligrid";
+import { INITIAL_CURSOR } from "../domain/types.js";
 import type { ScreenName } from "../domain/types.js";
 import type { StatePort } from "../domain/ports/state-port.js";
 import type { GamePort } from "../domain/ports/game-port.js";
@@ -13,13 +14,30 @@ import {
   getDraftDominoes,
   getKingdomForDisplay,
 } from "../application/selectors.js";
+import type { BotPort } from "../domain/ports/bot-port.js";
+import type { GameEngine, RevealsDomino } from "@pompidup/kingdomino-engine";
 import { isGameWithNextAction } from "@pompidup/kingdomino-engine";
 
 export type GameScreenDeps = {
   statePort: StatePort;
   gamePort: GamePort;
+  botPort: BotPort;
+  getEngine: () => GameEngine;
   onNavigate: (screen: ScreenName) => void;
 };
+
+export function findNextUnpickedIndex(
+  dominoes: RevealsDomino[],
+  currentIdx: number,
+  direction: 1 | -1,
+): number {
+  let idx = currentIdx + direction;
+  while (idx >= 0 && idx < dominoes.length) {
+    if (!dominoes[idx].picked) return idx;
+    idx += direction;
+  }
+  return currentIdx;
+}
 
 function actionToPhase(action: string | null): StatusBarPhase {
   if (action === "pickDomino") return "pick";
@@ -28,9 +46,10 @@ function actionToPhase(action: string | null): StatusBarPhase {
 }
 
 export function createGameScreen(deps: GameScreenDeps) {
-  const { statePort, gamePort, onNavigate } = deps;
+  const { statePort, gamePort, botPort, getEngine, onNavigate } = deps;
   const app = new App({ alternateScreen: true });
   let unsubscribe: (() => void) | null = null;
+  let prevGameState: unknown = null;
 
   function buildLayoutProps(): GameLayoutProps {
     const state = statePort.getState();
@@ -115,7 +134,8 @@ export function createGameScreen(deps: GameScreenDeps) {
     if (state.botPlaying) return;
     const action = getCurrentAction(state);
     if (action === "pickDomino") {
-      const newIdx = Math.max(0, state.draftSelection - 1);
+      const dominoes = getDraftDominoes(state);
+      const newIdx = findNextUnpickedIndex(dominoes, state.draftSelection, -1);
       statePort.dispatch({ type: "SET_DRAFT_SELECTION", index: newIdx });
     } else if (action === "placeDomino") {
       statePort.dispatch({ type: "SET_CURSOR", cursor: { y: Math.max(0, state.cursor.y - 1) } });
@@ -128,7 +148,7 @@ export function createGameScreen(deps: GameScreenDeps) {
     const action = getCurrentAction(state);
     if (action === "pickDomino") {
       const dominoes = getDraftDominoes(state);
-      const newIdx = Math.min(dominoes.length - 1, state.draftSelection + 1);
+      const newIdx = findNextUnpickedIndex(dominoes, state.draftSelection, 1);
       statePort.dispatch({ type: "SET_DRAFT_SELECTION", index: newIdx });
     } else if (action === "placeDomino") {
       statePort.dispatch({ type: "SET_CURSOR", cursor: { y: Math.min(8, state.cursor.y + 1) } });
@@ -178,6 +198,7 @@ export function createGameScreen(deps: GameScreenDeps) {
         const result = gamePort.chooseDomino(gameState, selected.domino.number, lordId);
         if (result.ok) {
           statePort.dispatch({ type: "SET_GAME_STATE", gameState: result.value });
+          checkAndRunBots();
         } else {
           statePort.dispatch({
             type: "SET_ERROR",
@@ -198,6 +219,7 @@ export function createGameScreen(deps: GameScreenDeps) {
       );
       if (result.ok) {
         statePort.dispatch({ type: "SET_GAME_STATE", gameState: result.value });
+        checkAndRunBots();
       } else {
         statePort.dispatch({
           type: "SET_ERROR",
@@ -217,9 +239,23 @@ export function createGameScreen(deps: GameScreenDeps) {
     if (!lordId) return;
 
     if (action === "placeDomino") {
+      const kingdom = getKingdomForDisplay(state);
+      const domino = getCurrentDomino(state);
+      if (kingdom && domino && gamePort.canPlaceDomino(kingdom, domino)) {
+        statePort.dispatch({
+          type: "SET_ERROR",
+          error: {
+            code: "CAN_STILL_PLACE",
+            message: "You can still place this domino",
+            timestamp: Date.now(),
+          },
+        });
+        return;
+      }
       const result = gamePort.discardDomino(gameState, lordId);
       if (result.ok) {
         statePort.dispatch({ type: "SET_GAME_STATE", gameState: result.value });
+        checkAndRunBots();
       }
     }
   });
@@ -228,10 +264,76 @@ export function createGameScreen(deps: GameScreenDeps) {
     stop();
   });
 
+  async function runBotLoop() {
+    const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    statePort.dispatch({ type: "SET_BOT_PLAYING", playing: true });
+
+    let state = statePort.getState();
+    while (
+      state.gameState &&
+      isGameWithNextAction(state.gameState) &&
+      botPort.isBotTurn(state.gameState)
+    ) {
+      await delay(400);
+      state = statePort.getState();
+      if (!state.gameState || !isGameWithNextAction(state.gameState)) break;
+      const result = botPort.playBotTurn(getEngine(), state.gameState);
+      if (result.ok) {
+        statePort.dispatch({ type: "SET_GAME_STATE", gameState: result.value });
+      } else {
+        statePort.dispatch({
+          type: "SET_ERROR",
+          error: { code: result.error.code, message: result.error.message, timestamp: Date.now() },
+        });
+        break;
+      }
+      await delay(200);
+      state = statePort.getState();
+    }
+
+    statePort.dispatch({ type: "SET_BOT_PLAYING", playing: false });
+  }
+
+  function checkAndRunBots() {
+    const state = statePort.getState();
+    if (
+      state.gameState &&
+      isGameWithNextAction(state.gameState) &&
+      botPort.isBotTurn(state.gameState)
+    ) {
+      runBotLoop();
+    }
+  }
+
+  function handlePhaseTransition() {
+    const state = statePort.getState();
+    if (state.gameState === prevGameState) return;
+    prevGameState = state.gameState;
+
+    const action = getCurrentAction(state);
+    if (action === "pickDomino") {
+      const dominoes = getDraftDominoes(state);
+      const firstUnpicked = dominoes.findIndex((d) => !d.picked);
+      if (firstUnpicked >= 0) {
+        statePort.dispatch({ type: "SET_DRAFT_SELECTION", index: firstUnpicked });
+      }
+    } else if (action === "placeDomino") {
+      statePort.dispatch({ type: "SET_CURSOR", cursor: INITIAL_CURSOR });
+      const kingdom = getKingdomForDisplay(state);
+      const domino = getCurrentDomino(state);
+      if (kingdom && domino) {
+        const placements = gamePort.getValidPlacements(kingdom, domino);
+        statePort.dispatch({ type: "SET_VALID_PLACEMENTS", placements });
+      }
+    }
+  }
+
   function start() {
     rerender();
+    checkAndRunBots();
     unsubscribe = statePort.subscribe(() => {
       rerender();
+      handlePhaseTransition();
       // Check for game end
       const state = statePort.getState();
       if (state.gameState && !isGameWithNextAction(state.gameState)) {

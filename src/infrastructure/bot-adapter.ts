@@ -1,12 +1,27 @@
-import type { GameEngine, GameWithNextAction, GameState } from "@pompidup/kingdomino-engine";
+import type {
+  GameEngine,
+  GameWithNextAction,
+  GameState,
+  BotStrategy,
+} from "@pompidup/kingdomino-engine";
 import {
   playBotTurn as enginePlayBotTurn,
   isBotTurn as engineIsBotTurn,
   getStrategyNames as engineGetStrategyNames,
-  getStrategy,
+  randomStrategy,
+  greedyStrategy,
+  advancedStrategy,
+  expertStrategy,
 } from "@pompidup/kingdomino-engine";
 import type { BotPort } from "../domain/ports/bot-port.js";
 import type { Result } from "../domain/ports/game-port.js";
+
+const strategyMap: Record<string, BotStrategy> = {
+  random: randomStrategy,
+  greedy: greedyStrategy,
+  advanced: advancedStrategy,
+  expert: expertStrategy,
+};
 
 export class BotAdapter implements BotPort {
   playBotTurn(engine: GameEngine, game: GameWithNextAction): Result<GameState> {
@@ -15,7 +30,7 @@ export class BotAdapter implements BotPort {
         game.lords.some((l) => l.id === game.nextAction.nextLord && l.playerId === p.id),
       );
       const strategyName = player?.bot?.strategyName ?? "random";
-      const strategy = getStrategy(strategyName);
+      const strategy = strategyMap[strategyName];
       if (!strategy) {
         return {
           ok: false,
