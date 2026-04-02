@@ -7,8 +7,20 @@ function reduce(state: AppState, action: Action): AppState {
     case "NAVIGATE":
       return { ...state, screen: action.screen };
 
-    case "SET_GAME_STATE":
-      return { ...state, gameState: action.gameState };
+    case "SET_GAME_STATE": {
+      const oldDominoes = state.gameState?.currentDominoes ?? [];
+      const newDominoes = action.gameState?.currentDominoes ?? [];
+      const oldNumbers = oldDominoes.map((d) => d.domino.number).sort().join(",");
+      const newNumbers = newDominoes.map((d) => d.domino.number).sort().join(",");
+      const draftChanged = oldNumbers !== newNumbers && oldDominoes.length > 0;
+      return {
+        ...state,
+        gameState: action.gameState,
+        ...(draftChanged
+          ? { previousDraft: oldDominoes, previousDraftTurn: state.gameState?.turn ?? 0 }
+          : {}),
+      };
+    }
 
     case "SET_CURSOR":
       return { ...state, cursor: { ...state.cursor, ...action.cursor } };

@@ -18,6 +18,7 @@ import type { BotPort } from "../domain/ports/bot-port.js";
 import type { GameEngine, RevealsDomino } from "@pompidup/kingdomino-engine";
 import { isGameWithNextAction } from "@pompidup/kingdomino-engine";
 import { mapErrorToFeedback } from "../application/error-feedback.js";
+import type { TranslateFn } from "../i18n/index.js";
 
 export type GameScreenDeps = {
   statePort: StatePort;
@@ -25,6 +26,7 @@ export type GameScreenDeps = {
   botPort: BotPort;
   getEngine: () => GameEngine;
   onNavigate: (screen: ScreenName) => void;
+  t?: TranslateFn;
 };
 
 export function findNextUnpickedIndex(
@@ -47,7 +49,7 @@ function actionToPhase(action: string | null): StatusBarPhase {
 }
 
 export function createGameScreen(deps: GameScreenDeps) {
-  const { statePort, gamePort, botPort, getEngine, onNavigate } = deps;
+  const { statePort, gamePort, botPort, getEngine, onNavigate, t } = deps;
   const app = new App({ alternateScreen: true });
   let unsubscribe: (() => void) | null = null;
   let prevGameState: unknown = null;
@@ -74,10 +76,13 @@ export function createGameScreen(deps: GameScreenDeps) {
       : [];
 
     const playerColors: Record<string, string> = {};
+    const playerNames: Record<string, string> = {};
     const colors = ["#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4"];
     if (state.gameState) {
       state.gameState.lords.forEach((lord, i) => {
         playerColors[lord.id] = colors[i % colors.length];
+        const player = state.gameState!.players.find((p) => p.id === lord.playerId);
+        if (player) playerNames[lord.id] = player.name;
       });
     }
 
@@ -91,6 +96,7 @@ export function createGameScreen(deps: GameScreenDeps) {
         action: currentAction ?? "",
         score: score.points,
         botPlaying: state.botPlaying,
+        t,
       },
       kingdomGrid: {
         kingdom: kingdom ?? [],
@@ -105,14 +111,24 @@ export function createGameScreen(deps: GameScreenDeps) {
         dominoes: draftDominoes,
         selectedIndex: state.draftSelection,
         playerColors,
+        playerNames,
         errorFlashIndex: feedback?.target === "draft" ? state.draftSelection : null,
       },
+      previousDraft: state.previousDraft.length > 0
+        ? {
+            dominoes: state.previousDraft,
+            playerColors,
+            playerNames,
+            turn: state.previousDraftTurn,
+          }
+        : undefined,
       miniKingdoms: otherPlayers.map((p) => ({
         kingdom: p.kingdom,
         compact: true,
       })),
       statusBar: {
         phase: actionToPhase(currentAction),
+        t,
         error:
           placementFlash === "placed"
             ? { message: "Domino placed!" }
@@ -130,6 +146,7 @@ export function createGameScreen(deps: GameScreenDeps) {
         playerColor: activeLord ? playerColors[activeLord.id] : undefined,
       },
       width: 80,
+      t,
     };
   }
 
@@ -282,7 +299,7 @@ export function createGameScreen(deps: GameScreenDeps) {
           type: "SET_ERROR",
           error: {
             code: "CAN_STILL_PLACE",
-            message: "You can still place this domino",
+            message: t?.("canStillPlace") ?? "You can still place this domino",
             timestamp: Date.now(),
           },
         });
@@ -331,9 +348,12 @@ export function createGameScreen(deps: GameScreenDeps) {
     statePort.dispatch({ type: "SET_BOT_PLAYING", playing: false });
   }
 
+  let botCheckScheduled = false;
+
   function checkAndRunBots() {
     const state = statePort.getState();
     if (
+      !state.botPlaying &&
       state.gameState &&
       isGameWithNextAction(state.gameState) &&
       botPort.isBotTurn(state.gameState)
@@ -342,16 +362,27 @@ export function createGameScreen(deps: GameScreenDeps) {
     }
   }
 
+  function scheduleCheckBots() {
+    if (botCheckScheduled) return;
+    botCheckScheduled = true;
+    setTimeout(() => {
+      botCheckScheduled = false;
+      checkAndRunBots();
+    }, 0);
+  }
+
   function handlePlayerTransition() {
     const state = statePort.getState();
     const activePlayer = getActivePlayer(state);
     const currentPlayerId = activePlayer?.id ?? null;
+    const isBot = activePlayer?.bot != null;
 
     if (
       currentPlayerId &&
       currentPlayerId !== prevPlayerId &&
       prevPlayerId !== null &&
-      !state.botPlaying
+      !state.botPlaying &&
+      !isBot
     ) {
       if (transitionTimeout) clearTimeout(transitionTimeout);
       statePort.dispatch({
@@ -422,6 +453,8 @@ export function createGameScreen(deps: GameScreenDeps) {
           onNavigate("results");
         }
       }
+      // Deferred bot check — ensures bot plays after any state change
+      scheduleCheckBots();
     });
     app.start();
   }

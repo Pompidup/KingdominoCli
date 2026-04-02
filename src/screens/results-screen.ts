@@ -6,16 +6,18 @@ import {
   renderResultsScreen,
   type ResultsScreenProps,
 } from "../presentation/results-screen-render.js";
+import type { TranslateFn } from "../i18n/index.js";
 
 export type ResultsScreenDeps = {
   statePort: StatePort;
   gamePort: GamePort;
   onPlayAgain: () => void;
   onQuit: () => void;
+  t?: TranslateFn;
 };
 
 export function createResultsScreen(deps: ResultsScreenDeps) {
-  const { statePort, gamePort, onPlayAgain, onQuit } = deps;
+  const { statePort, gamePort, onPlayAgain, onQuit, t } = deps;
   const app = new App({ alternateScreen: true });
   let scoreAnimInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -60,6 +62,7 @@ export function createResultsScreen(deps: ResultsScreenDeps) {
       playerKingdoms,
       width: 80,
       animatedScores: animationDone ? undefined : animatedScores,
+      t,
     });
   }
 

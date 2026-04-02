@@ -8,6 +8,8 @@ import { renderKingdomGrid } from "./kingdom-grid.js";
 import { renderDraftColumn } from "./draft-column.js";
 import { renderStatusBar } from "./status-bar.js";
 import { renderTransitionOverlay } from "./transition-overlay.js";
+import { renderLegend, renderTile } from "./terrain.js";
+import type { TranslateFn } from "../i18n/index.js";
 
 export type TransitionProps = {
   active: boolean;
@@ -15,15 +17,25 @@ export type TransitionProps = {
   playerColor?: string;
 };
 
+export type PreviousDraftProps = {
+  dominoes: DraftColumnProps["dominoes"];
+  playerColors?: Record<string, string>;
+  playerNames?: Record<string, string>;
+  turn: number;
+  ascii?: boolean;
+};
+
 export type GameLayoutProps = {
   turnInfo: TurnInfoProps;
   kingdomGrid: KingdomGridProps;
   draftColumn: DraftColumnProps;
+  previousDraft?: PreviousDraftProps;
   miniKingdoms: KingdomGridProps[];
   statusBar: StatusBarProps;
   transition?: TransitionProps;
   width: number;
   height?: number;
+  t?: TranslateFn;
 };
 
 function padRight(text: string, width: number): string {
@@ -61,6 +73,7 @@ export function renderGameLayout(props: GameLayoutProps): RenderLine[] {
     transition,
     width,
     height = 24,
+    t,
   } = props;
 
   if (transition?.active) {
@@ -79,24 +92,60 @@ export function renderGameLayout(props: GameLayoutProps): RenderLine[] {
   lines.push({ text: "─".repeat(width) });
 
   // Main area: kingdom grid (left) | draft + mini kingdoms (right)
-  const leftWidth = Math.floor(width * 0.6);
+  const leftWidth = Math.floor(width * 0.55);
   const gridLines = renderKingdomGrid(kingdomGrid);
+
+  // Build right panel: previous draft (if any) + current draft + mini kingdoms
+  const rightLines: RenderLine[] = [];
+
+  const { previousDraft } = props;
+  if (previousDraft && previousDraft.dominoes.length > 0) {
+    const turnWord = t?.("turn") ?? "Turn";
+    const prevLabel = `${t?.("previousTurn") ?? "Previous"} (${turnWord} ${previousDraft.turn})`;
+    rightLines.push({ text: prevLabel, style: { dim: true } });
+    for (const entry of previousDraft.dominoes) {
+      const left = renderTile(entry.domino.left, { compact: true, ascii: previousDraft.ascii });
+      const right = renderTile(entry.domino.right, { compact: true, ascii: previousDraft.ascii });
+      const num = `#${String(entry.domino.number).padStart(2, " ")}`;
+      const lordId = entry.lordId;
+      const name = lordId && previousDraft.playerNames?.[lordId]
+        ? ` ${previousDraft.playerNames[lordId]}`
+        : "";
+      rightLines.push({
+        text: `  ${num} ${left.text}|${right.text}${name}`,
+        style: {
+          dim: true,
+          ...(lordId && previousDraft.playerColors?.[lordId]
+            ? { fg: previousDraft.playerColors[lordId] }
+            : {}),
+        },
+      });
+    }
+    const currentLabel = `${t?.("currentTurn") ?? "Current"} (${turnWord} ${(previousDraft.turn ?? 0) + 1})`;
+    rightLines.push({ text: "" });
+    rightLines.push({ text: currentLabel, style: { bold: true } });
+  }
+
   const draftLines = renderDraftColumn(draftColumn);
+  rightLines.push(...draftLines);
 
   // Mini kingdoms below draft
-  const miniLines: RenderLine[] = [];
   if (miniKingdoms.length > 0) {
-    miniLines.push({ text: "" });
+    rightLines.push({ text: "" });
     for (const mk of miniKingdoms) {
       const mkLines = renderKingdomGrid({ ...mk, compact: true });
-      miniLines.push(...mkLines);
-      miniLines.push({ text: "" });
+      rightLines.push(...mkLines);
+      rightLines.push({ text: "" });
     }
   }
 
-  const rightLines = [...draftLines, ...miniLines];
   const mainArea = mergeSideBySide(gridLines, rightLines, leftWidth);
   lines.push(...mainArea);
+
+  // Legend
+  lines.push({ text: "" });
+  const legendLines = renderLegend(t);
+  lines.push(...legendLines);
 
   // Status bar (bottom)
   lines.push({ text: "─".repeat(width) });

@@ -1,4 +1,4 @@
-import type { GameState, ValidPlacement } from "@pompidup/kingdomino-engine";
+import type { GameState, ValidPlacement, RevealsDomino } from "@pompidup/kingdomino-engine";
 
 export type ScreenName = "title" | "config" | "game" | "results";
 
@@ -44,6 +44,8 @@ export type AppState = {
   draftSelection: number;
   validPlacements: ValidPlacement[];
   botPlaying: boolean;
+  previousDraft: RevealsDomino[];
+  previousDraftTurn: number;
 };
 
 export const SCREEN_NAMES: readonly ScreenName[] = ["title", "config", "game", "results"];
@@ -78,4 +80,6 @@ export const INITIAL_APP_STATE: AppState = {
   draftSelection: 0,
   validPlacements: [],
   botPlaying: false,
+  previousDraft: [],
+  previousDraftTurn: 0,
 };

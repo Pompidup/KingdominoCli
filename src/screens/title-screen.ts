@@ -1,13 +1,15 @@
 import { App, createComponent } from "@pompidup/cligrid";
 import type { ScreenName } from "../domain/types.js";
 import { renderTitleScreen } from "../presentation/title-screen-render.js";
+import type { TranslateFn } from "../i18n/index.js";
 
 export type TitleScreenDeps = {
   onNavigate: (screen: ScreenName) => void;
+  t?: TranslateFn;
 };
 
 export function createTitleScreen(deps: TitleScreenDeps) {
-  const { onNavigate } = deps;
+  const { onNavigate, t } = deps;
   const app = new App({ alternateScreen: true });
   let pulseInterval: ReturnType<typeof setInterval> | null = null;
   let showPrompt = true;
@@ -20,7 +22,7 @@ export function createTitleScreen(deps: TitleScreenDeps) {
     props: { showPrompt: true },
     render: (_props, context) => {
       const width = context?.terminalWidth ?? 80;
-      return renderTitleScreen({ width, showPrompt: _props.showPrompt });
+      return renderTitleScreen({ width, showPrompt: _props.showPrompt, t });
     },
   });
 

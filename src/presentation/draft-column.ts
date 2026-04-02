@@ -6,6 +6,7 @@ export type DraftColumnProps = {
   dominoes: RevealsDomino[];
   selectedIndex: number;
   playerColors?: Record<string, string>;
+  playerNames?: Record<string, string>;
   errorFlashIndex?: number | null;
   ascii?: boolean;
 };
@@ -15,6 +16,7 @@ export function renderDraftColumn(props: DraftColumnProps): RenderLine[] {
     dominoes,
     selectedIndex,
     playerColors = {},
+    playerNames = {},
     errorFlashIndex = null,
     ascii = false,
   } = props;
@@ -31,8 +33,8 @@ export function renderDraftColumn(props: DraftColumnProps): RenderLine[] {
 
     let status = "";
     if (entry.picked && entry.lordId) {
-      const color = playerColors[entry.lordId];
-      status = color ? ` ✓` : " ✓";
+      const name = playerNames[entry.lordId];
+      status = name ? ` ✓ ${name}` : " ✓";
     }
 
     const text = `${indicator} ${num} ${left.text}|${right.text}${status}`;

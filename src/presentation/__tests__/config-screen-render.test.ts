@@ -20,7 +20,7 @@ describe("renderConfigScreen", () => {
   it("renders the title", () => {
     const lines = renderConfigScreen(baseProps);
     const texts = lines.map((l) => l.text);
-    expect(texts.some((t) => t.includes("GAME CONFIGURATION"))).toBe(true);
+    expect(texts.some((t) => t.includes("Game Configuration"))).toBe(true);
   });
 
   it("renders player count selector", () => {
@@ -116,10 +116,12 @@ describe("renderConfigScreen", () => {
     expect(errorLine?.style?.fg).toBe("#ff0000");
   });
 
-  it("shows > indicator for selected field", () => {
+  it("shows highlighted start button when selected", () => {
     const lines = renderConfigScreen({ ...baseProps, selectedField: "start" });
     const startLine = lines.find((l) => l.text.includes("Start Game"));
-    expect(startLine?.text.startsWith(">")).toBe(true);
+    expect(startLine).toBeDefined();
+    expect(startLine?.style?.bold).toBe(true);
+    expect(startLine?.style?.fg).toBe("#00ff00");
   });
 
   it("renders help text", () => {

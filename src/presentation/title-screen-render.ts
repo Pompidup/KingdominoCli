@@ -6,14 +6,16 @@ import {
   TAGLINE,
   PROMPT_TEXT,
 } from "./ascii-art.js";
+import type { TranslateFn } from "../i18n/index.js";
 
 export type TitleScreenRenderOptions = {
   width: number;
   showPrompt: boolean;
+  t?: TranslateFn;
 };
 
 export function renderTitleScreen(options: TitleScreenRenderOptions): RenderLine[] {
-  const { width, showPrompt } = options;
+  const { width, showPrompt, t } = options;
   const lines: RenderLine[] = [];
 
   lines.push({ text: "" });
@@ -28,7 +30,7 @@ export function renderTitleScreen(options: TitleScreenRenderOptions): RenderLine
   });
   lines.push({ text: "" });
   lines.push({
-    text: renderCentered(TAGLINE, width),
+    text: renderCentered(t?.("tagline") ?? TAGLINE, width),
     style: { dim: true },
   });
   lines.push({ text: "" });
@@ -36,7 +38,7 @@ export function renderTitleScreen(options: TitleScreenRenderOptions): RenderLine
 
   if (showPrompt) {
     lines.push({
-      text: renderCentered(PROMPT_TEXT, width),
+      text: renderCentered(t?.("pressEnter") ?? PROMPT_TEXT, width),
       style: { bold: true },
     });
   } else {

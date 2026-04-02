@@ -1,4 +1,5 @@
 import type { RenderLine } from "@pompidup/cligrid";
+import type { TranslateFn } from "../i18n/index.js";
 
 export type TurnInfoProps = {
   turn: number;
@@ -7,20 +8,24 @@ export type TurnInfoProps = {
   action: string;
   score: number;
   botPlaying: boolean;
-};
-
-const ACTION_LABELS: Record<string, string> = {
-  pickDomino: "Pick domino",
-  placeDomino: "Place domino",
-  pass: "Pass",
+  t?: TranslateFn;
 };
 
 export function renderTurnInfo(props: TurnInfoProps): RenderLine[] {
-  const { turn, playerName, playerColor, action, score, botPlaying } = props;
+  const { turn, playerName, playerColor, action, score, botPlaying, t } = props;
+
+  const actionLabels: Record<string, string> = {
+    pickDomino: t?.("pickDomino") ?? "Pick domino",
+    placeDomino: t?.("placeDomino") ?? "Place domino",
+    pass: t?.("pass") ?? "Pass",
+  };
 
   const colorIndicator = playerColor ? "■ " : "";
-  const actionText = botPlaying ? "🤖 Bot thinking..." : (ACTION_LABELS[action] ?? action);
-  const text = `Turn ${turn} | ${colorIndicator}${playerName} | ${actionText} | Score: ${score}`;
+  const botText = t?.("botThinking") ?? "Bot thinking...";
+  const actionText = botPlaying ? `🤖 ${botText}` : (actionLabels[action] ?? action);
+  const turnLabel = t?.("turn") ?? "Turn";
+  const scoreLabel = t?.("score") ?? "Score";
+  const text = `${turnLabel} ${turn} | ${colorIndicator}${playerName} | ${actionText} | ${scoreLabel}: ${score}`;
 
   const style: RenderLine["style"] = { bold: true };
   if (playerColor) {

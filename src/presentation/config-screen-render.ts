@@ -1,13 +1,15 @@
 import type { RenderLine } from "@pompidup/cligrid";
 import type { PlayerConfig } from "../domain/types.js";
 import type { ExtraRule } from "@pompidup/kingdomino-engine";
+import { renderLogoLines, renderCentered } from "./ascii-art.js";
+import type { TranslateFn } from "../i18n/index.js";
 
 export type ConfigField =
   | "playerCount"
   | `player-${number}-name`
   | `player-${number}-type`
   | `player-${number}-botLevel`
-  | "extraRules"
+  | `extraRule-${number}`
   | "start";
 
 export type ConfigScreenRenderProps = {
@@ -18,6 +20,9 @@ export type ConfigScreenRenderProps = {
   availableStrategies: string[];
   selectedField: ConfigField;
   errors: string[];
+  editingName?: { playerIndex: number; value: string } | null;
+  width?: number;
+  t?: TranslateFn;
 };
 
 function fieldStyle(field: ConfigField, selected: ConfigField): RenderLine["style"] {
@@ -25,7 +30,7 @@ function fieldStyle(field: ConfigField, selected: ConfigField): RenderLine["styl
 }
 
 function indicator(field: ConfigField, selected: ConfigField): string {
-  return field === selected ? ">" : " ";
+  return field === selected ? "▸" : " ";
 }
 
 export function renderConfigScreen(props: ConfigScreenRenderProps): RenderLine[] {
@@ -37,17 +42,31 @@ export function renderConfigScreen(props: ConfigScreenRenderProps): RenderLine[]
     availableStrategies,
     selectedField,
     errors,
+    editingName = null,
+    width = 80,
+    t,
   } = props;
 
   const lines: RenderLine[] = [];
 
-  lines.push({ text: "═══ GAME CONFIGURATION ═══", style: { bold: true, fg: "#f5d442" } });
+  // ─── Header: ASCII art logo ───
+  lines.push({ text: "" });
+  const logoLines = renderLogoLines(width);
+  lines.push(...logoLines);
+  lines.push({ text: "" });
+  const configTitle = t?.("gameConfiguration") ?? "Game Configuration";
+  lines.push({ text: renderCentered(`═══ ${configTitle} ═══`, width), style: { bold: true, fg: "#f5d442" } });
   lines.push({ text: "" });
 
+  // ─── Body: Configuration options ───
+
   // Player count
-  const countOptions = [2, 3, 4].map((n) => (n === playerCount ? `[${n}]` : ` ${n} `)).join(" ");
+  const countOptions = [2, 3, 4]
+    .map((n) => (n === playerCount ? `[${n}]` : ` ${n} `))
+    .join(" ");
+  const playersLabel = t?.("players") ?? "Players";
   lines.push({
-    text: `${indicator("playerCount", selectedField)} Players: ${countOptions}`,
+    text: `  ${indicator("playerCount", selectedField)} ${playersLabel}: ${countOptions}`,
     style: fieldStyle("playerCount", selectedField),
   });
   lines.push({ text: "" });
@@ -59,28 +78,44 @@ export function renderConfigScreen(props: ConfigScreenRenderProps): RenderLine[]
     const typeField = `player-${i}-type` as ConfigField;
     const botField = `player-${i}-botLevel` as ConfigField;
 
+    const playerLabel = t?.("player") ?? "Player";
     lines.push({
-      text: `  Player ${i + 1}:`,
-      style: { bold: true },
+      text: `    ${playerLabel} ${i + 1}`,
+      style: { bold: true, dim: true },
     });
 
+    // Name field — inline editing
+    const nameLabel = t?.("name") ?? "Name";
+    let nameDisplay: string;
+    if (editingName && editingName.playerIndex === i) {
+      nameDisplay = editingName.value + "█";
+    } else {
+      nameDisplay = p.name || "___";
+    }
     lines.push({
-      text: `${indicator(nameField, selectedField)}   Name: ${p.name || "___"}`,
+      text: `  ${indicator(nameField, selectedField)}   ${nameLabel}: ${nameDisplay}`,
       style: fieldStyle(nameField, selectedField),
     });
 
-    const typeLabel = p.type === "human" ? "[Human] Bot" : "Human [Bot]";
+    // Type field — horizontal toggle with ◀ ▶ hint
+    const typeFieldLabel = t?.("type") ?? "Type";
+    const humanLabel = t?.("human") ?? "Human";
+    const botLabel = t?.("bot") ?? "Bot";
+    const typeLabel =
+      p.type === "human" ? `◀ [${humanLabel}]  ${botLabel}  ▶` : `◀  ${humanLabel}  [${botLabel}] ▶`;
     lines.push({
-      text: `${indicator(typeField, selectedField)}   Type: ${typeLabel}`,
+      text: `  ${indicator(typeField, selectedField)}   ${typeFieldLabel}: ${typeLabel}`,
       style: fieldStyle(typeField, selectedField),
     });
 
+    // Bot level
     if (p.type === "bot") {
+      const levelLabel = t?.("level") ?? "Level";
       const levelDisplay = availableStrategies
         .map((s) => (s === p.botLevel ? `[${s}]` : ` ${s} `))
         .join(" ");
       lines.push({
-        text: `${indicator(botField, selectedField)}   Level: ${levelDisplay}`,
+        text: `  ${indicator(botField, selectedField)}   ${levelLabel}: ◀ ${levelDisplay} ▶`,
         style: fieldStyle(botField, selectedField),
       });
     }
@@ -90,21 +125,30 @@ export function renderConfigScreen(props: ConfigScreenRenderProps): RenderLine[]
 
   // Extra rules
   if (availableRules.length > 0) {
-    lines.push({ text: "  Extra Rules:", style: { bold: true } });
-    for (const rule of availableRules) {
+    const rulesLabel = t?.("extraRules") ?? "Extra Rules";
+    lines.push({ text: `    ${rulesLabel}`, style: { bold: true, dim: true } });
+    for (let i = 0; i < availableRules.length; i++) {
+      const rule = availableRules[i];
+      const ruleField = `extraRule-${i}` as ConfigField;
       const checked = extraRules.includes(rule.name) ? "☑" : "☐";
       lines.push({
-        text: `${indicator("extraRules", selectedField)}   ${checked} ${rule.name} — ${rule.description}`,
-        style: fieldStyle("extraRules", selectedField),
+        text: `  ${indicator(ruleField, selectedField)}   ${checked} ${rule.name} — ${rule.description}`,
+        style: fieldStyle(ruleField, selectedField),
       });
     }
     lines.push({ text: "" });
   }
 
   // Start button
+  const startGameLabel = t?.("startGame") ?? "Start Game";
+  const startSelected = selectedField === "start";
   lines.push({
-    text: `${indicator("start", selectedField)} [ Start Game ]`,
-    style: fieldStyle("start", selectedField),
+    text: startSelected
+      ? renderCentered(`[ ▸ ${startGameLabel} ◂ ]`, width)
+      : renderCentered(`[  ${startGameLabel}  ]`, width),
+    style: startSelected
+      ? { bold: true, fg: "#00ff00" }
+      : { dim: true },
   });
 
   // Errors
@@ -115,11 +159,22 @@ export function renderConfigScreen(props: ConfigScreenRenderProps): RenderLine[]
     }
   }
 
+  // ─── Footer: Commands ───
   lines.push({ text: "" });
-  lines.push({
-    text: "  Tab: next field  ↑↓: change value  Enter: confirm  Ctrl+C: quit",
-    style: { dim: true },
-  });
+  lines.push({ text: "─".repeat(width), style: { dim: true } });
+
+  const isNameField = selectedField.endsWith("-name");
+  if (isNameField && editingName) {
+    lines.push({
+      text: renderCentered(t?.("footerEditName") ?? "Type to edit name  │  Enter: confirm  │  Esc: cancel  │  Ctrl+C: quit", width),
+      style: { dim: true },
+    });
+  } else {
+    lines.push({
+      text: renderCentered(t?.("footerNav") ?? "Tab: next field  │  ◀▶: change value  │  Space: toggle rule  │  Enter: confirm  │  Ctrl+C: quit", width),
+      style: { dim: true },
+    });
+  }
 
   return lines;
 }

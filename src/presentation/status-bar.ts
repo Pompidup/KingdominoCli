@@ -1,4 +1,5 @@
 import type { RenderLine } from "@pompidup/cligrid";
+import type { TranslateFn } from "../i18n/index.js";
 
 export type StatusBarPhase = "pick" | "place" | "idle";
 
@@ -7,16 +8,11 @@ export type StatusBarProps = {
   error?: { message: string } | null;
   errorFlash?: boolean;
   successFlash?: boolean;
-};
-
-const PHASE_SHORTCUTS: Record<StatusBarPhase, string> = {
-  pick: "↑↓ Navigate  ⏎ Pick  Tab View kingdoms",
-  place: "←↑↓→ Move  R Rotate  ⏎ Place  D Discard  Tab View",
-  idle: "⏎ Continue",
+  t?: TranslateFn;
 };
 
 export function renderStatusBar(props: StatusBarProps): RenderLine[] {
-  const { phase, error, errorFlash = false, successFlash = false } = props;
+  const { phase, error, errorFlash = false, successFlash = false, t } = props;
 
   if (error) {
     if (successFlash) {
@@ -28,5 +24,11 @@ export function renderStatusBar(props: StatusBarProps): RenderLine[] {
     return [{ text: `⚠ ${error.message}`, style }];
   }
 
-  return [{ text: PHASE_SHORTCUTS[phase], style: { dim: true } }];
+  const shortcuts: Record<StatusBarPhase, string> = {
+    pick: t?.("shortcutsPick") ?? "↑↓ Navigate  ⏎ Pick  Tab View kingdoms",
+    place: t?.("shortcutsPlace") ?? "←↑↓→ Move  R Rotate  ⏎ Place  D Discard  Tab View",
+    idle: t?.("shortcutsIdle") ?? "⏎ Continue",
+  };
+
+  return [{ text: shortcuts[phase], style: { dim: true } }];
 }

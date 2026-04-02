@@ -4,11 +4,14 @@ import { BotAdapter } from "./infrastructure/bot-adapter.js";
 import { StateManager } from "./application/state-manager.js";
 import { orchestrateGameSetup } from "./application/game-orchestrator.js";
 import { createTitleScreen } from "./screens/title-screen.js";
+import { createLanguageScreen } from "./screens/language-screen.js";
 import { createConfigScreen } from "./screens/config-screen.js";
 import { createGameScreen } from "./screens/game-screen.js";
 import { createResultsScreen } from "./screens/results-screen.js";
 import type { GameConfig } from "./domain/types.js";
 import { parseArgs, HELP_TEXT } from "./cli.js";
+import { createTranslate } from "./i18n/index.js";
+import type { Locale, TranslateFn } from "./i18n/index.js";
 
 const VERSION = "0.1.0";
 
@@ -31,6 +34,7 @@ const botAdapter = new BotAdapter();
 const stateManager = new StateManager();
 
 let activeScreen: { stop: () => void } | null = null;
+let t: TranslateFn = createTranslate("en");
 
 function stopActive() {
   if (activeScreen) {
@@ -48,6 +52,7 @@ function startConfigScreen() {
       stopActive();
       startGame(config);
     },
+    t,
   });
   activeScreen = configScreen;
   configScreen.start();
@@ -65,6 +70,7 @@ function showResults() {
       stopActive();
       process.exit(0);
     },
+    t,
   });
   activeScreen = resultsScreen;
   resultsScreen.start();
@@ -92,18 +98,36 @@ function startGame(config: GameConfig) {
         showResults();
       }
     },
+    t,
   });
 
   activeScreen = gameScreen;
   gameScreen.start();
 }
 
-const titleScreen = createTitleScreen({
-  onNavigate: () => {
-    stopActive();
-    startConfigScreen();
-  },
-});
+function showLanguageSelection() {
+  const languageScreen = createLanguageScreen({
+    onSelect: (locale: Locale) => {
+      t = createTranslate(locale);
+      stopActive();
+      showTitleScreen();
+    },
+  });
+  activeScreen = languageScreen;
+  languageScreen.start();
+}
 
-activeScreen = titleScreen;
-titleScreen.start();
+function showTitleScreen() {
+  const titleScreen = createTitleScreen({
+    onNavigate: () => {
+      stopActive();
+      startConfigScreen();
+    },
+    t,
+  });
+  activeScreen = titleScreen;
+  titleScreen.start();
+}
+
+// Start with language selection
+showLanguageSelection();

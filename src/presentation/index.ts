@@ -1,14 +1,16 @@
 export {
-  TERRAIN_SYMBOLS,
-  TERRAIN_ASCII,
+  TERRAIN_LABELS,
   TERRAIN_COLORS,
-  CROWN_SYMBOL,
-  CROWN_ASCII,
-  formatCrowns,
+  TERRAIN_FG,
+  TERRAIN_LEGEND,
+  TILE_WIDTH,
+  TILE_HEIGHT,
   renderTile,
+  renderTileSegment,
   renderDomino,
+  renderLegend,
 } from "./terrain.js";
-export type { RenderTileOptions, RenderDominoOrientation } from "./terrain.js";
+export type { RenderTileOptions, RenderDominoOrientation, HighlightType } from "./terrain.js";
 
 export { renderKingdomGrid } from "./kingdom-grid.js";
 export type { KingdomGridProps } from "./kingdom-grid.js";

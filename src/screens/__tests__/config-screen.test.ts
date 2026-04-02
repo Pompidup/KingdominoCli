@@ -98,8 +98,8 @@ describe("createConfigScreen", () => {
     const deps = createMockDeps();
     createConfigScreen(deps);
 
-    // Navigate to "start" field: tab through playerCount, p1-name, p1-type, p2-name, p2-type, extraRules, start
-    for (let i = 0; i < 6; i++) {
+    // Navigate to "start" field: tab through playerCount, p1-name, p1-type, p2-name, p2-type, start
+    for (let i = 0; i < 5; i++) {
       simulateKey("tab");
     }
 
