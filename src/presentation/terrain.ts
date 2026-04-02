@@ -40,7 +40,14 @@ export const TERRAIN_FG: Record<TerrainType, string> = {
   empty: "#333333",
 };
 
-export type TerrainLegendKey = "terrainCastle" | "terrainWheat" | "terrainForest" | "terrainSea" | "terrainPlain" | "terrainSwamp" | "terrainMine";
+export type TerrainLegendKey =
+  | "terrainCastle"
+  | "terrainWheat"
+  | "terrainForest"
+  | "terrainSea"
+  | "terrainPlain"
+  | "terrainSwamp"
+  | "terrainMine";
 
 export const TERRAIN_LEGEND: { type: TerrainType; key: TerrainLegendKey; fallback: string }[] = [
   { type: "castle", key: "terrainCastle", fallback: "Castle" },

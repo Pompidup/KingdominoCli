@@ -55,15 +55,16 @@ export function renderConfigScreen(props: ConfigScreenRenderProps): RenderLine[]
   lines.push(...logoLines);
   lines.push({ text: "" });
   const configTitle = t?.("gameConfiguration") ?? "Game Configuration";
-  lines.push({ text: renderCentered(`═══ ${configTitle} ═══`, width), style: { bold: true, fg: "#f5d442" } });
+  lines.push({
+    text: renderCentered(`═══ ${configTitle} ═══`, width),
+    style: { bold: true, fg: "#f5d442" },
+  });
   lines.push({ text: "" });
 
   // ─── Body: Configuration options ───
 
   // Player count
-  const countOptions = [2, 3, 4]
-    .map((n) => (n === playerCount ? `[${n}]` : ` ${n} `))
-    .join(" ");
+  const countOptions = [2, 3, 4].map((n) => (n === playerCount ? `[${n}]` : ` ${n} `)).join(" ");
   const playersLabel = t?.("players") ?? "Players";
   lines.push({
     text: `  ${indicator("playerCount", selectedField)} ${playersLabel}: ${countOptions}`,
@@ -102,7 +103,9 @@ export function renderConfigScreen(props: ConfigScreenRenderProps): RenderLine[]
     const humanLabel = t?.("human") ?? "Human";
     const botLabel = t?.("bot") ?? "Bot";
     const typeLabel =
-      p.type === "human" ? `◀ [${humanLabel}]  ${botLabel}  ▶` : `◀  ${humanLabel}  [${botLabel}] ▶`;
+      p.type === "human"
+        ? `◀ [${humanLabel}]  ${botLabel}  ▶`
+        : `◀  ${humanLabel}  [${botLabel}] ▶`;
     lines.push({
       text: `  ${indicator(typeField, selectedField)}   ${typeFieldLabel}: ${typeLabel}`,
       style: fieldStyle(typeField, selectedField),
@@ -146,9 +149,7 @@ export function renderConfigScreen(props: ConfigScreenRenderProps): RenderLine[]
     text: startSelected
       ? renderCentered(`[ ▸ ${startGameLabel} ◂ ]`, width)
       : renderCentered(`[  ${startGameLabel}  ]`, width),
-    style: startSelected
-      ? { bold: true, fg: "#00ff00" }
-      : { dim: true },
+    style: startSelected ? { bold: true, fg: "#00ff00" } : { dim: true },
   });
 
   // Errors
@@ -166,12 +167,20 @@ export function renderConfigScreen(props: ConfigScreenRenderProps): RenderLine[]
   const isNameField = selectedField.endsWith("-name");
   if (isNameField && editingName) {
     lines.push({
-      text: renderCentered(t?.("footerEditName") ?? "Type to edit name  │  Enter: confirm  │  Esc: cancel  │  Ctrl+C: quit", width),
+      text: renderCentered(
+        t?.("footerEditName") ??
+          "Type to edit name  │  Enter: confirm  │  Esc: cancel  │  Ctrl+C: quit",
+        width,
+      ),
       style: { dim: true },
     });
   } else {
     lines.push({
-      text: renderCentered(t?.("footerNav") ?? "Tab: next field  │  ◀▶: change value  │  Space: toggle rule  │  Enter: confirm  │  Ctrl+C: quit", width),
+      text: renderCentered(
+        t?.("footerNav") ??
+          "Tab: next field  │  ◀▶: change value  │  Space: toggle rule  │  Enter: confirm  │  Ctrl+C: quit",
+        width,
+      ),
       style: { dim: true },
     });
   }

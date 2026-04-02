@@ -24,7 +24,11 @@ function createDefaultPlayers(count: number): PlayerConfig[] {
   }));
 }
 
-function getFieldList(playerCount: number, players: PlayerConfig[], availableRulesCount: number): ConfigField[] {
+function getFieldList(
+  playerCount: number,
+  players: PlayerConfig[],
+  availableRulesCount: number,
+): ConfigField[] {
   const fields: ConfigField[] = ["playerCount"];
   for (let i = 0; i < playerCount; i++) {
     fields.push(`player-${i}-name`);
@@ -141,9 +145,7 @@ export function createConfigScreen(deps: ConfigScreenDeps) {
     if (editingName) {
       // Confirm name edit
       const idx = editingName.playerIndex;
-      players = players.map((p, i) =>
-        i === idx ? { ...p, name: editingName!.value } : p,
-      );
+      players = players.map((p, i) => (i === idx ? { ...p, name: editingName!.value } : p));
       editingName = null;
       rerender();
       return;

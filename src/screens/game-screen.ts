@@ -114,14 +114,15 @@ export function createGameScreen(deps: GameScreenDeps) {
         playerNames,
         errorFlashIndex: feedback?.target === "draft" ? state.draftSelection : null,
       },
-      previousDraft: state.previousDraft.length > 0
-        ? {
-            dominoes: state.previousDraft,
-            playerColors,
-            playerNames,
-            turn: state.previousDraftTurn,
-          }
-        : undefined,
+      previousDraft:
+        state.previousDraft.length > 0
+          ? {
+              dominoes: state.previousDraft,
+              playerColors,
+              playerNames,
+              turn: state.previousDraftTurn,
+            }
+          : undefined,
       miniKingdoms: otherPlayers.map((p) => ({
         kingdom: p.kingdom,
         compact: true,

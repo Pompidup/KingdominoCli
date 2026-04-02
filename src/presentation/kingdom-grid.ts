@@ -124,7 +124,8 @@ export function renderKingdomGrid(props: KingdomGridProps): RenderLine[] {
       }
 
       if (compact) {
-        const label = tileToRender.type === "empty" ? "· " : `${TERRAIN_LABELS[tileToRender.type]} `;
+        const label =
+          tileToRender.type === "empty" ? "· " : `${TERRAIN_LABELS[tileToRender.type]} `;
         rowLineTexts[0].push(highlight ? `${getHighlightIndicator(highlight)} ` : label);
       } else {
         const crowns = tileToRender.type !== "empty" ? tileToRender.crowns : 0;
@@ -134,7 +135,8 @@ export function renderKingdomGrid(props: KingdomGridProps): RenderLine[] {
         // Line 1: terrain label + crown info, with optional highlight indicator
         let line1Content: string;
         if (highlightInd) {
-          line1Content = crowns > 0 ? `${highlightInd}${label}${crowns}C` : `${highlightInd}${label}`;
+          line1Content =
+            crowns > 0 ? `${highlightInd}${label}${crowns}C` : `${highlightInd}${label}`;
         } else {
           line1Content = crowns > 0 ? `${label}${crowns}C` : label;
         }

@@ -77,7 +77,8 @@ const en: TranslationKeys = {
   extraRules: "Extra Rules",
   startGame: "Start Game",
   footerEditName: "Type to edit name  │  Enter: confirm  │  Esc: cancel  │  Ctrl+C: quit",
-  footerNav: "Tab: next field  │  ◀▶: change value  │  Space: toggle rule  │  Enter: confirm  │  Ctrl+C: quit",
+  footerNav:
+    "Tab: next field  │  ◀▶: change value  │  Space: toggle rule  │  Enter: confirm  │  Ctrl+C: quit",
   turn: "Turn",
   pickDomino: "Pick domino",
   placeDomino: "Place domino",
@@ -122,7 +123,8 @@ const fr: TranslationKeys = {
   extraRules: "Règles supplémentaires",
   startGame: "Lancer la partie",
   footerEditName: "Tapez pour modifier  │  Entrée: valider  │  Esc: annuler  │  Ctrl+C: quitter",
-  footerNav: "Tab: champ suivant  │  ◀▶: modifier  │  Espace: cocher  │  Entrée: valider  │  Ctrl+C: quitter",
+  footerNav:
+    "Tab: champ suivant  │  ◀▶: modifier  │  Espace: cocher  │  Entrée: valider  │  Ctrl+C: quitter",
   turn: "Tour",
   pickDomino: "Choisir un domino",
   placeDomino: "Placer le domino",

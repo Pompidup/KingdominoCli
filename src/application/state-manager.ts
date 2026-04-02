@@ -10,8 +10,14 @@ function reduce(state: AppState, action: Action): AppState {
     case "SET_GAME_STATE": {
       const oldDominoes = state.gameState?.currentDominoes ?? [];
       const newDominoes = action.gameState?.currentDominoes ?? [];
-      const oldNumbers = oldDominoes.map((d) => d.domino.number).sort().join(",");
-      const newNumbers = newDominoes.map((d) => d.domino.number).sort().join(",");
+      const oldNumbers = oldDominoes
+        .map((d) => d.domino.number)
+        .sort()
+        .join(",");
+      const newNumbers = newDominoes
+        .map((d) => d.domino.number)
+        .sort()
+        .join(",");
       const draftChanged = oldNumbers !== newNumbers && oldDominoes.length > 0;
       return {
         ...state,

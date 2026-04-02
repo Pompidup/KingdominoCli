@@ -108,9 +108,10 @@ export function renderGameLayout(props: GameLayoutProps): RenderLine[] {
       const right = renderTile(entry.domino.right, { compact: true, ascii: previousDraft.ascii });
       const num = `#${String(entry.domino.number).padStart(2, " ")}`;
       const lordId = entry.lordId;
-      const name = lordId && previousDraft.playerNames?.[lordId]
-        ? ` ${previousDraft.playerNames[lordId]}`
-        : "";
+      const name =
+        lordId && previousDraft.playerNames?.[lordId]
+          ? ` ${previousDraft.playerNames[lordId]}`
+          : "";
       rightLines.push({
         text: `  ${num} ${left.text}|${right.text}${name}`,
         style: {

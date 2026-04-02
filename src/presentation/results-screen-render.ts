@@ -16,7 +16,8 @@ const MEDAL_ICONS = ["🥇", "🥈", "🥉"];
 
 function getGameOverArt(t?: TranslateFn): string[] {
   const text = t?.("gameOver") ?? "G A M E   O V E R";
-  const padded = text.length < 27 ? text.padStart(Math.floor((27 + text.length) / 2)).padEnd(27) : text;
+  const padded =
+    text.length < 27 ? text.padStart(Math.floor((27 + text.length) / 2)).padEnd(27) : text;
   return [
     "╔═══════════════════════════════╗",
     `║  ${padded}  ║`,
@@ -28,11 +29,14 @@ function getMedal(position: number): string {
   return MEDAL_ICONS[position - 1] ?? `#${position}`;
 }
 
-function renderScoreBreakdown(details: {
-  points: number;
-  maxPropertiesSize: number;
-  totalCrowns: number;
-}, t?: TranslateFn): string {
+function renderScoreBreakdown(
+  details: {
+    points: number;
+    maxPropertiesSize: number;
+    totalCrowns: number;
+  },
+  t?: TranslateFn,
+): string {
   const scoreLabel = t?.("score") ?? "Score";
   const propLabel = t?.("largestProperty") ?? "Largest property";
   const crownLabel = t?.("crowns") ?? "Crowns";
