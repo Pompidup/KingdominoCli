@@ -1,4 +1,5 @@
 import type { Style, StyledSegment, RenderLine, TextAlign } from "@pompidup/cligrid";
+import { BORDER_CHARS } from "@pompidup/cligrid";
 import type { Ground } from "@pompidup/kingdomino-engine";
 import { THEME } from "./theme.js";
 
@@ -38,4 +39,22 @@ export function segmentLine(segments: StyledSegment[], align?: TextAlign): Rende
   const line: RenderLine = { text, segments };
   if (align) line.align = align;
   return line;
+}
+
+export type SeparatorStyle = "single" | "double" | "royal";
+
+/** Create a decorative separator line */
+export function separator(width: number, style: SeparatorStyle = "single"): RenderLine {
+  switch (style) {
+    case "double":
+      return { text: BORDER_CHARS.double.horizontal.repeat(width), style: { dim: true } };
+    case "royal": {
+      const char = BORDER_CHARS.double.horizontal;
+      const sideWidth = Math.max(0, Math.floor((width - 3) / 2));
+      const royalText = `${char.repeat(sideWidth)} ♔ ${char.repeat(sideWidth)}`;
+      return { text: royalText.slice(0, width), style: { fg: THEME.ui.gold } };
+    }
+    default:
+      return { text: BORDER_CHARS.single.horizontal.repeat(width), style: { dim: true } };
+  }
 }

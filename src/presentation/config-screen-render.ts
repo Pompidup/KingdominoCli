@@ -4,6 +4,7 @@ import type { ExtraRule } from "@pompidup/kingdomino-engine";
 import { renderLogoLines, renderCentered } from "./ascii-art.js";
 import type { TranslateFn } from "../i18n/index.js";
 import { THEME } from "./theme.js";
+import { separator } from "./segment-utils.js";
 
 export type ConfigField =
   | "playerCount"
@@ -163,7 +164,7 @@ export function renderConfigScreen(props: ConfigScreenRenderProps): RenderLine[]
 
   // ─── Footer: Commands ───
   lines.push({ text: "" });
-  lines.push({ text: "─".repeat(width), style: { dim: true } });
+  lines.push(separator(width));
 
   const isNameField = selectedField.endsWith("-name");
   if (isNameField && editingName) {

@@ -9,6 +9,7 @@ import { renderDraftColumn } from "./draft-column.js";
 import { renderStatusBar } from "./status-bar.js";
 import { renderTransitionOverlay } from "./transition-overlay.js";
 import { renderLegend, renderTile } from "./terrain.js";
+import { separator } from "./segment-utils.js";
 import type { TranslateFn } from "../i18n/index.js";
 
 export type TransitionProps = {
@@ -89,7 +90,7 @@ export function renderGameLayout(props: GameLayoutProps): RenderLine[] {
   // Turn info (top bar)
   const turnLines = renderTurnInfo(turnInfo);
   lines.push(...turnLines);
-  lines.push({ text: "─".repeat(width) });
+  lines.push(separator(width));
 
   // Main area: kingdom grid (left) | draft + mini kingdoms (right)
   const leftWidth = Math.floor(width * 0.55);
@@ -149,7 +150,7 @@ export function renderGameLayout(props: GameLayoutProps): RenderLine[] {
   lines.push(...legendLines);
 
   // Status bar (bottom)
-  lines.push({ text: "─".repeat(width) });
+  lines.push(separator(width));
   const statusLines = renderStatusBar(statusBar);
   lines.push(...statusLines);
 

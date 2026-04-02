@@ -4,6 +4,7 @@ import { renderCentered } from "./ascii-art.js";
 import { renderKingdomGrid } from "./kingdom-grid.js";
 import type { TranslateFn } from "../i18n/index.js";
 import { THEME } from "./theme.js";
+import { separator } from "./segment-utils.js";
 
 export type ResultsScreenProps = {
   results: FinalResult[];
@@ -112,7 +113,8 @@ export function renderResultsScreen(props: ResultsScreenProps): RenderLine[] {
   }
 
   // Footer
-  lines.push({ text: renderCentered("─".repeat(40), width), style: { dim: true } });
+  const sep = separator(40);
+  lines.push({ text: renderCentered(sep.text, width), style: sep.style });
   lines.push({ text: "" });
   const playAgainLabel = t?.("playAgain") ?? "Enter → Play Again";
   const quitLabel = t?.("quit") ?? "Q → Quit";

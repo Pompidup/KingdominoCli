@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { textSegment, coloredTile, joinSegments, segmentLine } from "../segment-utils.js";
+import {
+  textSegment,
+  coloredTile,
+  joinSegments,
+  segmentLine,
+  separator,
+} from "../segment-utils.js";
 import { THEME } from "../theme.js";
 
 describe("textSegment", () => {
@@ -89,5 +95,33 @@ describe("segmentLine", () => {
   it("sets align to right", () => {
     const line = segmentLine([textSegment("right")], "right");
     expect(line.align).toBe("right");
+  });
+});
+
+describe("separator", () => {
+  it("creates a single-style separator of given width", () => {
+    const line = separator(40);
+    expect(line.text).toHaveLength(40);
+    expect(line.text).toMatch(/^─+$/);
+    expect(line.style?.dim).toBe(true);
+  });
+
+  it("creates a double-style separator", () => {
+    const line = separator(20, "double");
+    expect(line.text).toHaveLength(20);
+    expect(line.text).toMatch(/^═+$/);
+    expect(line.style?.dim).toBe(true);
+  });
+
+  it("creates a royal separator with crown", () => {
+    const line = separator(40, "royal");
+    expect(line.text).toContain("♔");
+    expect(line.style?.fg).toBe(THEME.ui.gold);
+    expect(line.style?.dim).toBeUndefined();
+  });
+
+  it("defaults to single style", () => {
+    const line = separator(10);
+    expect(line.text).toBe("─".repeat(10));
   });
 });
