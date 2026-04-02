@@ -1,4 +1,5 @@
 export { THEME } from "./theme.js";
+export { textSegment, coloredTile, joinSegments, segmentLine } from "./segment-utils.js";
 
 export {
   TERRAIN_LABELS,
