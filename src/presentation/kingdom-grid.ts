@@ -1,7 +1,7 @@
 import type { Kingdom, Domino, ValidPlacement, Tile, EmptyTile } from "@pompidup/kingdomino-engine";
 import type { Rotation } from "../domain/types.js";
 import type { RenderLine } from "@pompidup/cligrid";
-import { TILE_WIDTH, TILE_HEIGHT, TERRAIN_LABELS, TERRAIN_COLORS } from "./terrain.js";
+import { TILE_WIDTH, TILE_HEIGHT, TERRAIN_LABELS } from "./terrain.js";
 import type { HighlightType } from "./terrain.js";
 
 export type KingdomGridProps = {

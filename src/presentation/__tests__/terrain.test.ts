@@ -7,7 +7,6 @@ import {
   renderTileSegment,
   renderDomino,
   renderLegend,
-  TILE_WIDTH,
   TILE_HEIGHT,
 } from "../terrain.js";
 import type { Tile, EmptyTile, Domino } from "@pompidup/kingdomino-engine";
