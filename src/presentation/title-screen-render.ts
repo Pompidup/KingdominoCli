@@ -7,6 +7,7 @@ import {
   PROMPT_TEXT,
 } from "./ascii-art.js";
 import type { TranslateFn } from "../i18n/index.js";
+import { THEME } from "./theme.js";
 
 export type TitleScreenRenderOptions = {
   width: number;
@@ -26,7 +27,7 @@ export function renderTitleScreen(options: TitleScreenRenderOptions): RenderLine
   lines.push({ text: "" });
   lines.push({
     text: renderCentered(CROWN_DECORATION, width),
-    style: { fg: "#f5d442" },
+    style: { fg: THEME.ui.gold },
   });
   lines.push({ text: "" });
   lines.push({

@@ -3,6 +3,7 @@ import { INITIAL_CURSOR } from "../domain/types.js";
 import type { ScreenName } from "../domain/types.js";
 import type { StatePort } from "../domain/ports/state-port.js";
 import type { GamePort } from "../domain/ports/game-port.js";
+import { THEME } from "../presentation/theme.js";
 import { renderGameLayout } from "../presentation/game-screen-render.js";
 import type { GameLayoutProps } from "../presentation/game-screen-render.js";
 import type { StatusBarPhase } from "../presentation/status-bar.js";
@@ -77,7 +78,7 @@ export function createGameScreen(deps: GameScreenDeps) {
 
     const playerColors: Record<string, string> = {};
     const playerNames: Record<string, string> = {};
-    const colors = ["#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4"];
+    const colors = [...THEME.player.colors];
     if (state.gameState) {
       state.gameState.lords.forEach((lord, i) => {
         playerColors[lord.id] = colors[i % colors.length];

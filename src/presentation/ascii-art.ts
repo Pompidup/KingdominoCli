@@ -1,4 +1,5 @@
 import type { RenderLine } from "@pompidup/cligrid";
+import { THEME } from "./theme.js";
 
 export const KINGDOMINO_LOGO = [
   "██╗  ██╗██╗███╗   ██╗ ██████╗ ██████╗  ██████╗ ███╗   ███╗██╗███╗   ██╗ ██████╗ ",
@@ -24,6 +25,6 @@ export function renderCentered(text: string, width: number): string {
 export function renderLogoLines(width: number): RenderLine[] {
   return KINGDOMINO_LOGO.map((line) => ({
     text: renderCentered(line, width),
-    style: { fg: "#f5d442", bold: true },
+    style: { fg: THEME.ui.gold, bold: true },
   }));
 }

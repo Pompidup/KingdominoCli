@@ -1,5 +1,6 @@
 import type { RenderLine } from "@pompidup/cligrid";
 import type { TranslateFn } from "../i18n/index.js";
+import { THEME } from "./theme.js";
 
 export type StatusBarPhase = "pick" | "place" | "idle";
 
@@ -16,11 +17,16 @@ export function renderStatusBar(props: StatusBarProps): RenderLine[] {
 
   if (error) {
     if (successFlash) {
-      return [{ text: `✓ ${error.message}`, style: { fg: "#00ff00", bg: "#003300", bold: true } }];
+      return [
+        {
+          text: `✓ ${error.message}`,
+          style: { fg: THEME.ui.success.fg, bg: THEME.ui.success.bg, bold: true },
+        },
+      ];
     }
     const style = errorFlash
-      ? { fg: "#ff0000", bg: "#330000", bold: true }
-      : { fg: "#ff0000", bold: true };
+      ? { fg: THEME.ui.error.fg, bg: THEME.ui.error.bg, bold: true }
+      : { fg: THEME.ui.error.fg, bold: true };
     return [{ text: `⚠ ${error.message}`, style }];
   }
 

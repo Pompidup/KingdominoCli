@@ -1,3 +1,5 @@
+export { THEME } from "./theme.js";
+
 export {
   TERRAIN_LABELS,
   TERRAIN_COLORS,

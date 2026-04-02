@@ -1,6 +1,7 @@
 import type { RevealsDomino } from "@pompidup/kingdomino-engine";
 import type { RenderLine } from "@pompidup/cligrid";
 import { renderTile } from "./terrain.js";
+import { THEME } from "./theme.js";
 
 export type DraftColumnProps = {
   dominoes: RevealsDomino[];
@@ -41,8 +42,8 @@ export function renderDraftColumn(props: DraftColumnProps): RenderLine[] {
 
     const style: RenderLine["style"] = {};
     if (errorFlashIndex === i) {
-      style.bg = "#660000";
-      style.fg = "#ff0000";
+      style.bg = THEME.ui.errorFlash.bg;
+      style.fg = THEME.ui.errorFlash.fg;
       style.bold = true;
     }
     if (isSelected) {

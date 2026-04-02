@@ -3,6 +3,7 @@ import type { FinalResult, Kingdom } from "@pompidup/kingdomino-engine";
 import { renderCentered } from "./ascii-art.js";
 import { renderKingdomGrid } from "./kingdom-grid.js";
 import type { TranslateFn } from "../i18n/index.js";
+import { THEME } from "./theme.js";
 
 export type ResultsScreenProps = {
   results: FinalResult[];
@@ -53,7 +54,7 @@ export function renderResultsScreen(props: ResultsScreenProps): RenderLine[] {
   // Crown decoration
   lines.push({
     text: renderCentered("♔ ♕ ♔ ♕ ♔ ♕ ♔", width),
-    style: { fg: "#f5d442" },
+    style: { fg: THEME.ui.gold },
   });
   lines.push({ text: "" });
 
@@ -62,14 +63,14 @@ export function renderResultsScreen(props: ResultsScreenProps): RenderLine[] {
   for (const artLine of gameOverArt) {
     lines.push({
       text: renderCentered(artLine, width),
-      style: { fg: "#f5d442", bold: true },
+      style: { fg: THEME.ui.gold, bold: true },
     });
   }
 
   lines.push({ text: "" });
   lines.push({
     text: renderCentered("♔ ♕ ♔ ♕ ♔ ♕ ♔", width),
-    style: { fg: "#f5d442" },
+    style: { fg: THEME.ui.gold },
   });
   lines.push({ text: "" });
 

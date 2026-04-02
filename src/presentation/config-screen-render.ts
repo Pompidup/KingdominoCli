@@ -3,6 +3,7 @@ import type { PlayerConfig } from "../domain/types.js";
 import type { ExtraRule } from "@pompidup/kingdomino-engine";
 import { renderLogoLines, renderCentered } from "./ascii-art.js";
 import type { TranslateFn } from "../i18n/index.js";
+import { THEME } from "./theme.js";
 
 export type ConfigField =
   | "playerCount"
@@ -26,7 +27,7 @@ export type ConfigScreenRenderProps = {
 };
 
 function fieldStyle(field: ConfigField, selected: ConfigField): RenderLine["style"] {
-  return field === selected ? { bold: true, fg: "#f5d442" } : {};
+  return field === selected ? { bold: true, fg: THEME.ui.gold } : {};
 }
 
 function indicator(field: ConfigField, selected: ConfigField): string {
@@ -57,7 +58,7 @@ export function renderConfigScreen(props: ConfigScreenRenderProps): RenderLine[]
   const configTitle = t?.("gameConfiguration") ?? "Game Configuration";
   lines.push({
     text: renderCentered(`═══ ${configTitle} ═══`, width),
-    style: { bold: true, fg: "#f5d442" },
+    style: { bold: true, fg: THEME.ui.gold },
   });
   lines.push({ text: "" });
 
@@ -149,14 +150,14 @@ export function renderConfigScreen(props: ConfigScreenRenderProps): RenderLine[]
     text: startSelected
       ? renderCentered(`[ ▸ ${startGameLabel} ◂ ]`, width)
       : renderCentered(`[  ${startGameLabel}  ]`, width),
-    style: startSelected ? { bold: true, fg: "#00ff00" } : { dim: true },
+    style: startSelected ? { bold: true, fg: THEME.ui.startButton } : { dim: true },
   });
 
   // Errors
   if (errors.length > 0) {
     lines.push({ text: "" });
     for (const error of errors) {
-      lines.push({ text: `  ⚠ ${error}`, style: { fg: "#ff0000" } });
+      lines.push({ text: `  ⚠ ${error}`, style: { fg: THEME.ui.error.fg } });
     }
   }
 

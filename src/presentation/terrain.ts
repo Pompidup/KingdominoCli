@@ -1,6 +1,7 @@
 import type { Tile, EmptyTile, Ground, Domino } from "@pompidup/kingdomino-engine";
 import type { RenderLine, Style } from "@pompidup/cligrid";
 import type { TranslateFn } from "../i18n/index.js";
+import { THEME } from "./theme.js";
 
 type TerrainType = Ground | "empty";
 
@@ -18,27 +19,9 @@ export const TERRAIN_LABELS: Record<TerrainType, string> = {
   empty: " ",
 };
 
-export const TERRAIN_COLORS: Record<TerrainType, string> = {
-  castle: "#8a6fba",
-  wheat: "#f5d442",
-  forest: "#228b22",
-  sea: "#1e90ff",
-  plain: "#90ee90",
-  swamp: "#8b7355",
-  mine: "#4a4a4a",
-  empty: "#1a1a1a",
-};
+export const TERRAIN_COLORS: Record<TerrainType, string> = THEME.terrain.bg;
 
-export const TERRAIN_FG: Record<TerrainType, string> = {
-  castle: "#ffffff",
-  wheat: "#000000",
-  forest: "#ffffff",
-  sea: "#ffffff",
-  plain: "#000000",
-  swamp: "#ffffff",
-  mine: "#ffffff",
-  empty: "#333333",
-};
+export const TERRAIN_FG: Record<TerrainType, string> = THEME.terrain.fg;
 
 export type TerrainLegendKey =
   | "terrainCastle"
@@ -69,9 +52,9 @@ function centerText(text: string, width: number): string {
 export type HighlightType = "valid" | "invalid" | "error" | null;
 
 function getHighlightBg(highlight: HighlightType): string | null {
-  if (highlight === "valid") return "#00aa00";
-  if (highlight === "invalid") return "#aa0000";
-  if (highlight === "error") return "#cc0000";
+  if (highlight === "valid") return THEME.highlight.valid;
+  if (highlight === "invalid") return THEME.highlight.invalid;
+  if (highlight === "error") return THEME.highlight.error;
   return null;
 }
 

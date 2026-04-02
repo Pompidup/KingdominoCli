@@ -3,6 +3,7 @@ import type { Rotation } from "../domain/types.js";
 import type { RenderLine } from "@pompidup/cligrid";
 import { TILE_WIDTH, TILE_HEIGHT, TERRAIN_LABELS } from "./terrain.js";
 import type { HighlightType } from "./terrain.js";
+import { THEME } from "./theme.js";
 
 export type KingdomGridProps = {
   kingdom: Kingdom;
@@ -152,7 +153,7 @@ export function renderKingdomGrid(props: KingdomGridProps): RenderLine[] {
       const lineText = rowLineTexts[l].join("");
       const style: RenderLine["style"] = {};
       // Use a subtle dark background for the grid
-      style.bg = "#1a1a2e";
+      style.bg = THEME.ui.gridBg;
       lines.push({ text: lineText, style });
     }
   }
