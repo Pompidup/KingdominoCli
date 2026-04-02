@@ -54,7 +54,7 @@
     "vitest": "^4.1.2"
   },
   "dependencies": {
-    "@pompidup/cligrid": "^1.0.1",
+    "@pompidup/cligrid": "^1.1.0",
     "@pompidup/kingdomino-engine": "^3.3.0"
   }
 }

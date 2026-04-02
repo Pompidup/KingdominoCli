@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@pompidup/cligrid':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.1.0
+        version: 1.1.0
       '@pompidup/kingdomino-engine':
         specifier: ^3.3.0
         version: 3.3.0
@@ -311,8 +311,8 @@ packages:
   '@oxc-project/types@0.122.0':
     resolution: {integrity: sha512-oLAl5kBpV4w69UtFZ9xqcmTi+GENWOcPF7FCrczTiBbmC0ibXxCwyvZGbO39rCVEuLGAZM84DH0pUIyyv/YJzA==}
 
-  '@pompidup/cligrid@1.0.1':
-    resolution: {integrity: sha512-7mOl8Gmv7jQejm+Ecj/pOHi3KC5Pek/Y71akO6WSP5BnstX+a28NP7BOS7HUL+n3IfzU05nKhP2zK7qQoVhkPQ==}
+  '@pompidup/cligrid@1.1.0':
+    resolution: {integrity: sha512-ukNCu4x9y98YB1NmaVaRSrhio0aXiBEkCGgWYEIzUYxEe/1tcFmpcSzVk7MeEw1kp4w+1ShrnMfVVLCG9xUQVA==}
     engines: {node: '>=18'}
 
   '@pompidup/kingdomino-engine@3.3.0':
@@ -1557,7 +1557,7 @@ snapshots:
 
   '@oxc-project/types@0.122.0': {}
 
-  '@pompidup/cligrid@1.0.1': {}
+  '@pompidup/cligrid@1.1.0': {}
 
   '@pompidup/kingdomino-engine@3.3.0': {}
 
